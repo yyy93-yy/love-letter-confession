@@ -205,6 +205,23 @@
             transform: none;
         }
 
+        .music-btn {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+        .music-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
+        }
+        
         @media (max-width: 600px) {
             .touch-controls { display: block; }
         }
@@ -262,20 +279,21 @@
         </div>
     </div>
 
-    <!-- 页面3：连连看游戏 -->
+    <!-- 页面3：扫雷游戏 -->
     <div class="page" id="page3">
         <div class="glass-card" style="position: relative;">
             <div class="progress-bar">
                 <div class="progress-fill" style="width: 66%;"></div>
             </div>
-            <h1 class="title">🎮 第二关：心心相印</h1>
-            <p class="subtitle">消除所有爱心，通过第二关！</p>
+            <h1 class="title">💣 第二关：爱心扫雷</h1>
+            <p class="subtitle">找出所有爱心，避开炸弹！</p>
             <div class="game-info">
-                <span>剩余: <span class="game-score" id="linkScore">36</span></span>
+                <span>💖 爱心: <span class="game-score" id="mineHearts">10</span></span>
+                <span>💣 剩余: <span class="game-level" id="mineRemaining">34</span></span>
             </div>
-            <canvas id="linkGame" width="320" height="320"></canvas>
+            <canvas id="mineGame" width="320" height="320"></canvas>
             <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
-                💡 游戏规则：点击两个相同的爱心图案，如果它们之间可以用不超过两条线连接，就能消除！全部消除即可过关~
+                💡 游戏规则：点击格子翻开，找出所有爱心获胜！小心炸弹！
             </p>
         </div>
     </div>
@@ -290,6 +308,10 @@
                 <div class="letter-title">💕 给<span id="letterName">XXX</span>先生的一封信 💕</div>
                 <div class="letter-content" id="letterContent"></div>
             </div>
+            <audio id="backgroundMusic" loop>
+                <source src="https://music.163.com/song/media/outer/url?id=1972800112.mp3" type="audio/mpeg">
+            </audio>
+            <button id="musicToggle" class="music-btn" onclick="toggleMusic()">🎵 播放音乐</button>
         </div>
     </div>
 
@@ -422,8 +444,8 @@
                     ctx.beginPath(); ctx.moveTo(0, i * gridSize); ctx.lineTo(canvas.width, i * gridSize); ctx.stroke();
                 }
 
-                // 绘制食物（爱心）
-                drawHeart(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2, '#ff6b9d');
+                // 绘制食物（爱心）- 增大爱心尺寸
+                drawHeart(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize * 0.7, '#ff6b9d');
 
                 // 绘制蛇
                 snake.forEach((segment, i) => {
@@ -481,7 +503,7 @@
                             clearInterval(gameLoop);
                             document.getElementById('touchControls').style.display = 'none';
                             showPage('page3');
-                            initLinkGame();
+                            initMineGame();
                         }, 1000);
                         return;
                     }
@@ -491,17 +513,18 @@
             }
 
             function spawnFood() {
+                // 确保食物不在边缘，留出2格的距离
                 food = {
-                    x: Math.floor(Math.random() * tileCount),
-                    y: Math.floor(Math.random() * tileCount)
+                    x: 2 + Math.floor(Math.random() * (tileCount - 4)),
+                    y: 2 + Math.floor(Math.random() * (tileCount - 4))
                 };
                 if (snake.some(s => s.x === food.x && s.y === food.y)) spawnFood();
             }
 
             function resetGame() {
-                snake = [{x: 10, y: 10}];
-                food = {x: 15, y: 10};
-                dx = 1; dy = 0;
+                snake = [{x: 8, y: 8}];
+                food = {x: 12, y: 8}; // 初始食物放在中间区域
+                snakeDx = 1; snakeDy = 0;
                 score = 0;
                 level = 1;
                 document.getElementById('snakeScore').textContent = score;
@@ -521,7 +544,7 @@
             // 显示触摸控制按钮
             document.getElementById('touchControls').style.display = 'block';
 
-            gameLoop = setInterval(game, 250);
+            gameLoop = setInterval(game, 350);
         }
 
         // 触摸控制贪吃蛇移动
@@ -534,38 +557,83 @@
             }
         }
 
-        // 连连看游戏
-        function initLinkGame() {
-            const canvas = document.getElementById('linkGame');
+        // 扫雷游戏
+        function initMineGame() {
+            const canvas = document.getElementById('mineGame');
             const ctx = canvas.getContext('2d');
             const gridSize = 40;
-            const cols = 8, rows = 6;
-            const totalPairs = (cols * rows) / 2;
+            const cols = 8, rows = 8;
+            const totalCells = cols * rows;
+            const heartCount = 7; // 爱心数量
             
             let board = [];
-            let selected = [];
-            let matched = 0;
-            let heartTypes = ['❤️', '❤️', '💗', '💗', '💖', '💖', '💕', '💕', '💝', '💝', '💞', '💞', '💘', '💘', '💓', '💓', '💟', '💟'];
+            let gameOver = false;
+            let heartsFound = 0;
+            let remainingCells = totalCells;
 
+            // 初始化游戏板
             function initBoard() {
                 board = [];
-                const pairs = [];
-                for (let i = 0; i < totalPairs; i++) {
-                    pairs.push(i, i);
-                }
-                // 洗牌
-                for (let i = pairs.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-                }
+                gameOver = false;
+                heartsFound = 0;
+                remainingCells = totalCells;
+                
+                // 创建空白格子
                 for (let r = 0; r < rows; r++) {
                     board[r] = [];
                     for (let c = 0; c < cols; c++) {
-                        board[r][c] = { type: pairs[r * cols + c], matched: false };
+                        board[r][c] = { isHeart: false, isMine: false, isRevealed: false, neighborMines: 0 };
                     }
                 }
+                
+                // 随机放置爱心
+                let placed = 0;
+                while (placed < heartCount) {
+                    const r = Math.floor(Math.random() * rows);
+                    const c = Math.floor(Math.random() * cols);
+                    if (!board[r][c].isHeart && !board[r][c].isMine) {
+                        board[r][c].isHeart = true;
+                        placed++;
+                    }
+                }
+                
+                // 其余都是炸弹
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (!board[r][c].isHeart) {
+                            board[r][c].isMine = true;
+                        }
+                    }
+                }
+                
+                // 计算每个格子周围的炸弹数
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (!board[r][c].isHeart) {
+                            let count = 0;
+                            for (let dr = -1; dr <= 1; dr++) {
+                                for (let dc = -1; dc <= 1; dc++) {
+                                    const nr = r + dr;
+                                    const nc = c + dc;
+                                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc].isMine) {
+                                        count++;
+                                    }
+                                }
+                            }
+                            board[r][c].neighborMines = count;
+                        }
+                    }
+                }
+                
+                updateUI();
             }
 
+            function updateUI() {
+                document.getElementById('mineHearts').textContent = heartsFound + '/' + heartCount;
+                document.getElementById('mineRemaining').textContent = remainingCells;
+            }
+
+            // 绘制游戏
             function draw() {
                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -574,134 +642,165 @@
                     for (let c = 0; c < cols; c++) {
                         const x = c * gridSize;
                         const y = r * gridSize;
+                        const cell = board[r][c];
                         
-                        if (board[r][c].matched) {
-                            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
-                        } else {
-                            const isSelected = selected.some(s => s.r === r && s.c === c);
-                            ctx.fillStyle = isSelected ? 'rgba(255,215,0,0.3)' : 'rgba(255,100,200,0.2)';
-                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
+                        if (cell.isRevealed) {
+                            // 已翻开的格子
+                            ctx.fillStyle = 'rgba(100, 50, 150, 0.3)';
+                            ctx.fillRect(x + 1, y + 1, gridSize - 2, gridSize - 2);
                             
-                            ctx.font = '24px Arial';
+                            if (cell.isHeart) {
+                                // 爱心
+                                ctx.font = '24px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('❤️', x + gridSize/2, y + gridSize/2);
+                            } else if (cell.isMine) {
+                                // 炸弹
+                                ctx.font = '24px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('💣', x + gridSize/2, y + gridSize/2);
+                            } else if (cell.neighborMines > 0) {
+                                // 数字提示
+                                ctx.font = '20px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillStyle = '#ffd700';
+                                ctx.fillText(cell.neighborMines.toString(), x + gridSize/2, y + gridSize/2);
+                            }
+                        } else {
+                            // 未翻开的格子
+                            ctx.fillStyle = 'rgba(255, 100, 200, 0.4)';
+                            ctx.strokeStyle = 'rgba(255, 100, 200, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
+                            ctx.strokeRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
+                            
+                            // 问号提示
+                            ctx.font = '20px Arial';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            ctx.fillText(heartTypes[board[r][c].type], x + gridSize/2, y + gridSize/2);
+                            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                            ctx.fillText('?', x + gridSize/2, y + gridSize/2);
                         }
                     }
                 }
             }
 
-            function canLink(r1, c1, r2, c2) {
-                if (r1 === r2 && c1 === c2) return false;
-                if (board[r1][c1].type !== board[r2][c2].type) return false;
+            // 翻开格子
+            function reveal(r, c) {
+                if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+                if (board[r][c].isRevealed || gameOver) return;
                 
-                // 直线连接
-                if (r1 === r2) {
-                    let minC = Math.min(c1, c2), maxC = Math.max(c1, c2);
-                    let canPass = true;
-                    for (let c = minC + 1; c < maxC; c++) {
-                        if (!board[r1][c].matched) { canPass = false; break; }
+                board[r][c].isRevealed = true;
+                remainingCells--;
+                
+                if (board[r][c].isHeart) {
+                    // 找到爱心
+                    heartsFound++;
+                    updateUI();
+                    
+                    if (heartsFound === heartCount) {
+                        // 胜利！
+                        gameOver = true;
+                        setTimeout(() => {
+                            alert('🎉 恭喜通关！找到所有爱心！');
+                            showPage('page4');
+                            showLetter();
+                            fireworks.createExplosion(window.innerWidth/2, window.innerHeight/2);
+                            setTimeout(() => fireworks.createExplosion(Math.random()*window.innerWidth, Math.random()*window.innerHeight), 200);
+                        }, 500);
                     }
-                    if (canPass) return true;
-                }
-                if (c1 === c2) {
-                    let minR = Math.min(r1, r2), maxR = Math.max(r1, r2);
-                    let canPass = true;
-                    for (let r = minR + 1; r < maxR; r++) {
-                        if (!board[r][c1].matched) { canPass = false; break; }
+                } else if (board[r][c].isMine) {
+                    // 踩到炸弹 - 简单模式：只显示这个炸弹，不重新开始
+                    board[r][c].isRevealed = true;
+                    remainingCells--;
+                    // 显示一下就盖回去，继续游戏
+                    setTimeout(() => {
+                        board[r][c].isRevealed = false;
+                        remainingCells++;
+                        draw();
+                    }, 300);
+                } else if (board[r][c].neighborMines === 0) {
+                    // 空白格子，自动翻开周围
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (dr !== 0 || dc !== 0) {
+                                reveal(r + dr, c + dc);
+                            }
+                        }
                     }
-                    if (canPass) return true;
                 }
-
-                // 一次转折
-                if (checkCorner(r1, c1, r1, c2, r2, c2)) return true;
-                if (checkCorner(r1, c1, r2, c1, r2, c2)) return true;
-
-                // 二次转折
-                for (let c = -1; c <= cols; c++) {
-                    if (checkCorner(r1, c1, r1, c, r2, c) && checkCorner(r2, c, r2, c2, r2, c2)) return true;
-                }
-                for (let r = -1; r <= rows; r++) {
-                    if (checkCorner(r1, c1, r, c1, r, c2) && checkCorner(r, c2, r2, c2, r2, c2)) return true;
-                }
-
-                return false;
-            }
-
-            function checkCorner(r1, c1, r2, c2, r3, c3) {
-                if ((r1 === r2 && c2 === c3) || (r2 === r3 && c1 === c2)) {
-                    const isEmpty1 = (r2 < 0 || r2 >= rows || c2 < 0 || c2 >= cols) || board[r2][c2].matched;
-                    const isEmpty2 = (r3 < 0 || r3 >= rows || c3 < 0 || c3 >= cols) || board[r3][c3].matched;
-                    return isEmpty1 && isEmpty2;
-                }
-                return false;
+                
+                updateUI();
+                draw();
             }
 
             function handleClick(e) {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const c = Math.floor(x / gridSize);
-                const r = Math.floor(y / gridSize);
-
-                if (r < 0 || r >= rows || c < 0 || c >= cols) return;
-                if (board[r][c].matched) return;
-
-                const alreadySelected = selected.some(s => s.r === r && s.c === c);
-                if (alreadySelected) return;
-
-                selected.push({ r, c });
-
-                if (selected.length === 2) {
-                    const [first, second] = selected;
-                    if (canLink(first.r, first.c, second.r, second.c)) {
-                        board[first.r][first.c].matched = true;
-                        board[second.r][second.c].matched = true;
-                        matched++;
-                        document.getElementById('linkScore').textContent = (cols * rows) - matched * 2;
-                        
-                        if (matched === totalPairs) {
-                            setTimeout(() => {
-                                alert('🎉 恭喜通过第二关！即将揭晓最终惊喜！');
-                                showPage('page4');
-                                showLetter();
-                                fireworks.createExplosion(window.innerWidth/2, window.innerHeight/2);
-                                setTimeout(() => fireworks.createExplosion(Math.random()*window.innerWidth, Math.random()*window.innerHeight), 200);
-                            }, 500);
-                        }
-                    }
-                    selected = [];
+                e.preventDefault();
+                if (gameOver) return;
+                
+                let x, y;
+                if (e.touches && e.touches.length > 0) {
+                    x = e.touches[0].clientX;
+                    y = e.touches[0].clientY;
+                } else {
+                    x = e.clientX;
+                    y = e.clientY;
                 }
-
-                draw();
+                
+                const rect = canvas.getBoundingClientRect();
+                const clickX = (x - rect.left) * (canvas.width / rect.width);
+                const clickY = (y - rect.top) * (canvas.height / rect.height);
+                
+                const c = Math.floor(clickX / gridSize);
+                const r = Math.floor(clickY / gridSize);
+                
+                reveal(r, c);
             }
 
             initBoard();
             draw();
             canvas.addEventListener('click', handleClick);
+            canvas.addEventListener('touchstart', handleClick);
         }
 
         // 显示表白信
         function showLetter() {
-            const letterContent = `亲爱的${userName}先生：
+            const letterContent = `亲爱的${userName}：
 
-我时常庆幸你出现在我的生命里，带给我太多太多感动，有很多幸福瞬间。感谢你的出现，温暖了我的世界。我远比你想象中更需要你，因为我真的很在意你，你总能左右我的情绪。
+我好像从来不是谁的首选，也没有一个人坚定的选择我。那些看似表面美好，终究只是短暂停靠，从未有人愿意为我卸下防备，坚定地在我身边。
 
-我喜欢每天早上给你发信息，然后睡着等你的消息；也喜欢每天和你互道早安晚安。我喜欢你大小事都跟我说，让我感觉到我被需要。我希望能有一条很长很长的线把我们缠在一起，虽然我未必能给你轰轰烈烈的爱，但我能保证我会陪你很久很久。
+于我而言，认定一个人就只会是他。从小心翼翼的试探开始，刚认识时故作热络，挖空心思找话题接茬，怕空气沉寂，怕彼此疏远。我藏起了真实的自己，我的棱角磨平，情绪...我没有情绪了。
 
-我们在一起的时间不长，可我清楚我对你的爱不是一时兴起，也不是新鲜感。等到新鲜感褪去，我依然坚定地站在你身边，绝对不轻易离开，不轻易放弃。我不懂相遇的意义，但我相信绝对不是放弃。你像礼物一样闯进我的世界里，我细数，我珍重。
+人心是留不住的，关系总会在不知不觉中慢慢冷却。曾经的感觉深刻烙印在我心底，别人说我是个深情专一的女生。我对每一个喜欢的人，都痛的彻底，换了一个人，我还会照旧。
 
-我希望你能读懂我的心思。我是一个嘴硬、生气爱说反话、频繁流眼泪、占有欲强的小女孩。我改不掉一生气就说反话、一委屈就掉眼泪的毛病。我不愿意暴露自己内心的脆弱敏感，遇事总让你猜，可我忘了你是一个小男孩，不是我肚子里的蛔虫，没有办法猜到我真正的想法。
+好像总是这样，起雾了，我看不清前方的路了...我无数次思考，是执念太深还是过于喜欢，我找不到答案。
 
-我还任性，喜欢跟你闹脾气，总是胡思乱想。我总无理取闹，想以此来确定我在你心里的分量。其实我想告诉你，我依赖你，我害怕失去你，谢谢你包容我的孩子气。
+你知道的，我会继续这样，直到有一天，你的脸在我记忆中模糊，直到，我记不起你的名字，直到，我不再留恋你给我的感觉。
 
-我想告诉你，我爱你的一切，你的全部我都喜欢。你的眼睛，你的鼻子，你的耳朵，你的名字，你的性格，你的外貌，你的开朗，你的固执，你的微笑，你的优点，你的不足。好好吃饭的你，陪我闹的时候的你，我永远爱你。
-
-相爱的话，即使不能天天见面，我知道你不会走，你知道我不会变，这就足够了。熬过这段年纪，以后无论天涯海北，你去哪我都跟，好不好。`;
+最后，祝你早、午、晚都安。`;
 
             document.getElementById('letterName').textContent = userName;
             document.getElementById('letterContent').textContent = letterContent;
+        }
+
+        // 背景音乐控制
+        function toggleMusic() {
+            const audio = document.getElementById('backgroundMusic');
+            const btn = document.getElementById('musicToggle');
+            
+            if (audio.paused) {
+                audio.play().then(() => {
+                    btn.innerHTML = '🎵 暂停音乐';
+                }).catch(err => {
+                    console.log('自动播放被阻止，请手动点击播放');
+                });
+            } else {
+                audio.pause();
+                btn.innerHTML = '🎵 播放音乐';
+            }
         }
 
         // 初始化
