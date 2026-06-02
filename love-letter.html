@@ -154,9 +154,59 @@
         /* 移动端适配 */
         @media (max-width: 600px) {
             .title { font-size: 22px; }
-            .glass-card { padding: 25px 20px; }
-            .name-input { width: 200px; padding: 12px 20px; }
+            .glass-card { padding: 20px 15px; width: 95%; }
+            .name-input { width: 180px; padding: 12px 15px; font-size: 16px; }
             .btn { padding: 14px 28px; font-size: 16px; }
+            #snakeGame, #linkGame { width: 100%; max-width: 320px; height: auto; }
+            .letter-container { max-height: 60vh; }
+            .letter-title { font-size: 20px; }
+            .letter-content { font-size: 14px; }
+        }
+
+        /* 触摸控制按钮 */
+        .touch-controls {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        .touch-pad {
+            width: 200px;
+            height: 200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+        }
+        .touch-btn {
+            background: rgba(255, 100, 200, 0.3);
+            border: 2px solid rgba(255, 100, 200, 0.6);
+            border-radius: 12px;
+            font-size: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .touch-btn:hover, .touch-btn:active {
+            background: rgba(255, 100, 200, 0.6);
+            transform: scale(0.95);
+        }
+        .touch-btn.center {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        .touch-btn.center:hover {
+            transform: none;
+        }
+
+        @media (max-width: 600px) {
+            .touch-controls { display: block; }
         }
     </style>
 </head>
@@ -194,6 +244,21 @@
             <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
                 使用 ↑ ↓ ← → 或 WASD 控制方向
             </p>
+        </div>
+    </div>
+
+    <!-- 触摸控制按钮 -->
+    <div class="touch-controls" id="touchControls">
+        <div class="touch-pad">
+            <div></div>
+            <div class="touch-btn" onclick="snakeMove('up')">↑</div>
+            <div></div>
+            <div class="touch-btn" onclick="snakeMove('left')">←</div>
+            <div class="touch-btn center"></div>
+            <div class="touch-btn" onclick="snakeMove('right')">→</div>
+            <div></div>
+            <div class="touch-btn" onclick="snakeMove('down')">↓</div>
+            <div></div>
         </div>
     </div>
 
@@ -309,6 +374,7 @@
         // 全局变量
         let userName = '';
         const fireworks = new Fireworks(document.getElementById('fireworksCanvas'));
+        let snakeDx = 1, snakeDy = 0; // 贪吃蛇方向（用于触摸控制）
 
         // 开始旅程
         function startJourney() {
@@ -340,7 +406,7 @@
             
             let snake = [{x: 10, y: 10}];
             let food = {x: 15, y: 10};
-            let dx = 1, dy = 0;
+            snakeDx = 1; snakeDy = 0; // 初始化方向
             let score = 0;
             let level = 1;
             let gameLoop;
@@ -386,7 +452,7 @@
             }
 
             function move() {
-                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                const head = {x: snake[0].x + snakeDx, y: snake[0].y + snakeDy};
                 
                 // 边界检测
                 if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
@@ -413,6 +479,7 @@
                         alert('🎉 恭喜通过第一关！即将进入第二关！');
                         setTimeout(() => {
                             clearInterval(gameLoop);
+                            document.getElementById('touchControls').style.display = 'none';
                             showPage('page3');
                             initLinkGame();
                         }, 1000);
@@ -445,13 +512,26 @@
 
             // 键盘控制
             document.addEventListener('keydown', (e) => {
-                if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && dy !== 1) { dx = 0; dy = -1; }
-                if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && dy !== -1) { dx = 0; dy = 1; }
-                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && dx !== 1) { dx = -1; dy = 0; }
-                if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && dx !== -1) { dx = 1; dy = 0; }
+                if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && snakeDy !== 1) { snakeDx = 0; snakeDy = -1; }
+                if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && snakeDy !== -1) { snakeDx = 0; snakeDy = 1; }
+                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && snakeDx !== 1) { snakeDx = -1; snakeDy = 0; }
+                if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && snakeDx !== -1) { snakeDx = 1; snakeDy = 0; }
             });
 
+            // 显示触摸控制按钮
+            document.getElementById('touchControls').style.display = 'block';
+
             gameLoop = setInterval(game, 250);
+        }
+
+        // 触摸控制贪吃蛇移动
+        function snakeMove(direction) {
+            switch(direction) {
+                case 'up': if (snakeDy !== 1) { snakeDx = 0; snakeDy = -1; } break;
+                case 'down': if (snakeDy !== -1) { snakeDx = 0; snakeDy = 1; } break;
+                case 'left': if (snakeDx !== 1) { snakeDx = -1; snakeDy = 0; } break;
+                case 'right': if (snakeDx !== -1) { snakeDx = 1; snakeDy = 0; } break;
+            }
         }
 
         // 连连看游戏
@@ -465,7 +545,7 @@
             let board = [];
             let selected = [];
             let matched = 0;
-            let heartTypes = ['❤️', '❤️', '💗', '💗', '💖', '💖', '💕', '💕', '💝', '�', '�💞', '�', '�💘', '�', '�', '💓', '�', '�'];
+            let heartTypes = ['❤️', '❤️', '💗', '💗', '💖', '💖', '💕', '💕', '💝', '💝', '💞', '💞', '💘', '💘', '💓', '💓', '💟', '💟'];
 
             function initBoard() {
                 board = [];
