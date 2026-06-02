@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💕 星空表白信 💕</title>
+    <title>💕 爱的旅程 💕</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,27 +13,31 @@
             font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
             color: #fff;
         }
-        #starsCanvas, #heartsCanvas, #fireworksCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+        #starsCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 0;
         }
-        #starsCanvas { z-index: 0; }
-        #heartsCanvas { z-index: 1; }
-        #fireworksCanvas { z-index: 100; display: none; }
-        
-        .glass-card {
+
+        /* 通用页面容器 */
+        .page {
             position: relative; z-index: 10;
-            width: 90%; max-width: 500px; margin: 8% auto;
+            width: 100%; height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 20px;
+            display: none;
+        }
+        .page.active { display: flex; }
+
+        /* 毛玻璃卡片 */
+        .glass-card {
+            width: 90%; max-width: 500px;
             padding: 40px;
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 40px rgba(255, 100, 200, 0.3), 0 0 80px rgba(150, 100, 255, 0.2), inset 0 0 60px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 40px rgba(255, 100, 200, 0.3), 0 0 80px rgba(150, 100, 255, 0.2);
             text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 0 60px rgba(255, 100, 200, 0.4), 0 0 100px rgba(150, 100, 255, 0.3), inset 0 0 80px rgba(255, 255, 255, 0.08);
         }
         .glass-card::before {
             content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
@@ -43,156 +47,193 @@
             animation: borderGlow 4s ease infinite; opacity: 0.7;
         }
         @keyframes borderGlow { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
-        
+
+        /* 标题 */
         .title {
             font-size: 28px; font-weight: bold;
             background: linear-gradient(135deg, #ffc0cb, #e0aaff, #c4b5fd);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            text-shadow: 0 0 30px rgba(255, 100, 200, 0.5);
+            margin-bottom: 30px;
         }
-        
-        .name-input-container { margin: 20px 0; }
-        .name-label {
-            display: block; font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 8px;
+        .subtitle {
+            font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 30px;
         }
+
+        /* 输入框 */
         .name-input {
-            width: 200px; padding: 12px 20px;
-            border: 2px solid rgba(255, 100, 200, 0.5); border-radius: 30px;
-            background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px;
+            width: 250px; padding: 15px 25px;
+            border: 2px solid rgba(255, 100, 200, 0.5); border-radius: 40px;
+            background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 18px;
             text-align: center; outline: none;
             transition: all 0.3s ease;
+            margin-bottom: 20px;
         }
         .name-input:focus {
             border-color: #ff6b9d;
             box-shadow: 0 0 20px rgba(255, 100, 200, 0.4);
-            background: rgba(255, 255, 255, 0.15);
         }
-        
-        .love-text {
-            font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.9);
-            margin: 30px 0; min-height: 100px;
-        }
-        .name-highlight {
-            color: #ffd700; font-weight: bold;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); font-size: 20px;
-        }
-        
-        .button-container {
-            display: flex; gap: 20px; justify-content: center;
-            margin-top: 30px; flex-wrap: wrap;
-        }
+        .name-input::placeholder { color: rgba(255,255,255,0.4); }
+
+        /* 按钮 */
         .btn {
-            padding: 16px 36px; font-size: 18px; font-weight: bold;
+            padding: 16px 40px; font-size: 18px; font-weight: bold;
             border: none; border-radius: 40px; cursor: pointer;
-            transition: all 0.3s ease; position: relative;
-        }
-        .btn-accept {
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab); color: #fff;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+            color: #fff;
             box-shadow: 0 4px 20px rgba(255, 107, 157, 0.5);
         }
-        .btn-accept:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 107, 157, 0.7); }
-        .btn-think {
-            background: linear-gradient(135deg, #60a5fa, #93c5fd); color: #fff;
-            box-shadow: 0 4px 20px rgba(96, 165, 250, 0.5);
-            transition: all 0.1s ease;
-        }
-        .btn-think:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(96, 165, 250, 0.7); }
-        
-        .coquetry-text {
-            margin-top: 20px; font-size: 16px; color: #ffd700;
-            opacity: 0; transition: opacity 0.3s ease;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-        .coquetry-text.show { opacity: 1; }
-        
-        .love-days {
-            position: fixed; right: 20px; bottom: 20px; z-index: 10;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
-            border-radius: 30px; font-size: 14px; color: #ffd700;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-        }
-        
-        .success-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
-            z-index: 200; display: none;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
-        .success-overlay.show { display: flex; }
-        .success-text {
-            font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 30px;
-            background: linear-gradient(135deg, #ffd700, #ff6b9d, #c084fc);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
-            animation: successPulse 1s ease infinite;
-        }
-        @keyframes successPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
-        .success-subtitle { font-size: 18px; color: rgba(255,255,255,0.8); }
-        
-        .petal {
-            position: fixed; width: 20px; height: 20px;
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            border-radius: 50% 0 50% 50%; z-index: 150;
-            pointer-events: none; opacity: 0.8;
-        }
-        
-        @keyframes petalFall {
-            0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.8; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.7);
         }
 
+        /* 进度条 */
+        .progress-bar {
+            width: 100%; height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #c084fc);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* 贪吃蛇游戏 */
+        #snakeGame {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,100,200,0.5);
+            border-radius: 12px;
+        }
+        .game-info {
+            display: flex; justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .game-score, .game-level {
+            color: #ffd700;
+        }
+
+        /* 连连看游戏 */
+        #linkGame {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,100,200,0.5);
+            border-radius: 12px;
+        }
+
+        /* 表白信 */
+        .letter-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            text-align: left;
+            line-height: 2;
+            color: rgba(255,255,255,0.9);
+        }
+        .letter-title {
+            text-align: center;
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .letter-content {
+            font-size: 15px;
+            white-space: pre-line;
+        }
+
+        /* 烟花效果 */
+        #fireworksCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 100; display: none;
+        }
+
+        /* 移动端适配 */
         @media (max-width: 600px) {
-            .glass-card { padding: 25px 20px; margin: 5% auto; }
             .title { font-size: 22px; }
-            .love-text { font-size: 16px; }
+            .glass-card { padding: 25px 20px; }
+            .name-input { width: 200px; padding: 12px 20px; }
             .btn { padding: 14px 28px; font-size: 16px; }
-            .button-container { gap: 15px; }
-            .love-days { right: 10px; bottom: 10px; padding: 10px 18px; font-size: 12px; }
-            .success-text { font-size: 24px; padding: 0 20px; }
         }
     </style>
 </head>
 <body>
     <canvas id="starsCanvas"></canvas>
-    <canvas id="heartsCanvas"></canvas>
     <canvas id="fireworksCanvas"></canvas>
-    
-    <div class="glass-card" id="mainCard">
-        <h1 class="title">💕 星空下的告白 💕</h1>
-        <div class="name-input-container">
-            <label class="name-label">输入TA的名字：</label>
+
+    <!-- 页面1：输入名字 -->
+    <div class="page active" id="page1">
+        <div class="glass-card" style="position: relative;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <h1 class="title">💕 爱的旅程开始 💕</h1>
+            <p class="subtitle">请输入您的名字，开启这段浪漫之旅</p>
             <input type="text" class="name-input" id="nameInput" placeholder="请输入名字" maxlength="10" />
+            <div style="height: 20px;" id="nameError"></div>
+            <button class="btn" onclick="startJourney()">开始冒险 ❤️</button>
         </div>
-        <div class="love-text" id="loveText">
-            亲爱的<span class="name-highlight" id="nameDisplay">XXX</span>，<br/>
-            从遇见你的那天起，<br/>
-            我的世界开始发光。
-        </div>
-        <div class="button-container">
-            <button class="btn btn-accept" id="acceptBtn">我愿意 ❤️</button>
-            <button class="btn btn-think" id="thinkBtn">再想想 💭</button>
-        </div>
-        <div class="coquetry-text" id="coquetryText">不许跑~再考虑一下嘛 ✨</div>
     </div>
-    
-    <div class="love-days" id="loveDays">爱你的第 <span id="daysCount">131</span> 天</div>
-    
-    <div class="success-overlay" id="successOverlay">
-        <div class="success-text">我就知道！我的世界圆满了！</div>
-        <div class="success-subtitle">💖 愿我们永远在一起 💖</div>
+
+    <!-- 页面2：贪吃蛇游戏 -->
+    <div class="page" id="page2">
+        <div class="glass-card" style="position: relative;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33%;"></div>
+            </div>
+            <h1 class="title">🐍 第一关：贪吃蛇大作战</h1>
+            <p class="subtitle">帮助小蛇吃到20个爱心，通过第一关！</p>
+            <div class="game-info">
+                <span>得分: <span class="game-score" id="snakeScore">0</span></span>
+                <span>关卡: <span class="game-level" id="snakeLevel">1</span></span>
+            </div>
+            <canvas id="snakeGame" width="320" height="320"></canvas>
+            <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
+                使用 ↑ ↓ ← → 或 WASD 控制方向
+            </p>
+        </div>
+    </div>
+
+    <!-- 页面3：连连看游戏 -->
+    <div class="page" id="page3">
+        <div class="glass-card" style="position: relative;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 66%;"></div>
+            </div>
+            <h1 class="title">🎮 第二关：心心相印</h1>
+            <p class="subtitle">消除所有爱心，通过第二关！</p>
+            <div class="game-info">
+                <span>剩余: <span class="game-score" id="linkScore">36</span></span>
+            </div>
+            <canvas id="linkGame" width="320" height="320"></canvas>
+            <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
+                💡 游戏规则：点击两个相同的爱心图案，如果它们之间可以用不超过两条线连接，就能消除！全部消除即可过关~
+            </p>
+        </div>
+    </div>
+
+    <!-- 页面4：表白信 -->
+    <div class="page" id="page4">
+        <div class="glass-card" style="position: relative; max-height: 85vh;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+            <div class="letter-container">
+                <div class="letter-title">💕 给<span id="letterName">XXX</span>先生的一封信 💕</div>
+                <div class="letter-content" id="letterContent"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 星空粒子背景
+        // 星空背景
         class StarField {
             constructor(canvas) {
                 this.canvas = canvas; this.ctx = canvas.getContext('2d');
-                this.stars = []; this.mouseX = 0; this.mouseY = 0;
-                this.resize(); this.initStars(); this.animate();
+                this.stars = []; this.resize(); this.initStars(); this.animate();
             }
             resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
             initStars() {
@@ -201,37 +242,21 @@
                 for (let i = 0; i < starCount; i++) {
                     this.stars.push({
                         x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height,
-                        radius: Math.random() * 2 + 0.5, speed: Math.random() * 0.5 + 0.1,
-                        opacity: Math.random() * 0.8 + 0.2,
+                        radius: Math.random() * 2 + 0.5, speed: Math.random() * 0.3 + 0.1,
                         twinkleSpeed: Math.random() * 0.02 + 0.01,
                         twinklePhase: Math.random() * Math.PI * 2
                     });
                 }
             }
-            setMousePosition(x, y) { this.mouseX = x; this.mouseY = y; }
             animate() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 this.stars.forEach(star => {
-                    const dx = this.mouseX - this.canvas.width / 2;
-                    const dy = this.mouseY - this.canvas.height / 2;
-                    const depth = star.radius * 20;
-                    const offsetX = dx / depth; const offsetY = dy / depth;
-                    
                     star.twinklePhase += star.twinkleSpeed;
-                    const twinkle = Math.sin(star.twinklePhase) * 0.3 + 0.7;
-                    const alpha = star.opacity * twinkle;
-                    
+                    const alpha = (Math.sin(star.twinklePhase) * 0.3 + 0.7) * 0.8;
                     this.ctx.beginPath();
-                    this.ctx.arc(star.x + offsetX, star.y + offsetY, star.radius, 0, Math.PI * 2);
-                    const gradient = this.ctx.createRadialGradient(
-                        star.x + offsetX, star.y + offsetY, 0,
-                        star.x + offsetX, star.y + offsetY, star.radius * 2
-                    );
-                    gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-                    gradient.addColorStop(0.5, `rgba(200,200,255,${alpha * 0.5})`);
-                    gradient.addColorStop(1, 'rgba(100,100,200,0)');
-                    this.ctx.fillStyle = gradient; this.ctx.fill();
-                    
+                    this.ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                    this.ctx.fill();
                     star.y -= star.speed;
                     if (star.y < -star.radius) { star.y = this.canvas.height + star.radius; star.x = Math.random() * this.canvas.width; }
                 });
@@ -239,55 +264,7 @@
             }
         }
 
-        // 爱心气泡效果
-        class HeartBubbles {
-            constructor(canvas) {
-                this.canvas = canvas; this.ctx = canvas.getContext('2d');
-                this.hearts = []; this.resize(); this.initHearts(); this.animate();
-            }
-            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
-            initHearts() {
-                this.hearts = [];
-                for (let i = 0; i < 15; i++) {
-                    this.hearts.push({
-                        x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height,
-                        size: Math.random() * 20 + 15,
-                        speedX: (Math.random() - 0.5) * 0.5, speedY: Math.random() * 0.3 + 0.1,
-                        opacity: Math.random() * 0.4 + 0.1,
-                        wobbleSpeed: Math.random() * 0.02 + 0.01,
-                        wobblePhase: Math.random() * Math.PI * 2
-                    });
-                }
-            }
-            drawHeart(x, y, size, alpha) {
-                this.ctx.save(); this.ctx.translate(x, y); this.ctx.scale(size / 20, size / 20);
-                this.ctx.beginPath();
-                this.ctx.moveTo(10, 10);
-                this.ctx.bezierCurveTo(10, 0, 0, 0, 0, 10);
-                this.ctx.bezierCurveTo(0, 15, 5, 18, 10, 20);
-                this.ctx.bezierCurveTo(15, 18, 20, 15, 20, 10);
-                this.ctx.bezierCurveTo(20, 0, 10, 0, 10, 10);
-                const gradient = this.ctx.createRadialGradient(10, 10, 0, 10, 10, 15);
-                gradient.addColorStop(0, `rgba(255,107,157,${alpha})`);
-                gradient.addColorStop(1, 'rgba(255,107,157,0)');
-                this.ctx.fillStyle = gradient; this.ctx.fill(); this.ctx.restore();
-            }
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.hearts.forEach(heart => {
-                    heart.wobblePhase += heart.wobbleSpeed;
-                    const wobble = Math.sin(heart.wobblePhase) * 2;
-                    heart.x += heart.speedX + wobble * 0.1;
-                    heart.y -= heart.speedY;
-                    if (heart.x < -heart.size || heart.x > this.canvas.width + heart.size) heart.speedX *= -1;
-                    if (heart.y < -heart.size) { heart.y = this.canvas.height + heart.size; heart.x = Math.random() * this.canvas.width; }
-                    this.drawHeart(heart.x, heart.y, heart.size, heart.opacity);
-                });
-                requestAnimationFrame(() => this.animate());
-            }
-        }
-
-        // 烟花粒子效果
+        // 烟花效果
         class Fireworks {
             constructor(canvas) {
                 this.canvas = canvas; this.ctx = canvas.getContext('2d');
@@ -295,15 +272,15 @@
             }
             resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
             createExplosion(x, y) {
-                const colors = ['#ff6b9d', '#ff8fab', '#f472b6', '#c084fc', '#a78bfa', '#818cf8', '#60a5fa', '#38bdf8', '#ffd700', '#fbbf24'];
-                for (let i = 0; i < 100; i++) {
-                    const angle = (Math.PI * 2 * i) / 100;
-                    const speed = Math.random() * 5 + 3;
+                const colors = ['#ff6b9d', '#ff8fab', '#c084fc', '#a78bfa', '#ffd700'];
+                for (let i = 0; i < 80; i++) {
+                    const angle = (Math.PI * 2 * i) / 80;
+                    const speed = Math.random() * 4 + 2;
                     const color = colors[Math.floor(Math.random() * colors.length)];
                     this.particles.push({
                         x: x, y: y,
                         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                        gravity: 0.15, size: Math.random() * 6 + 3,
+                        gravity: 0.12, size: Math.random() * 5 + 2,
                         color: color, alpha: 1, decay: Math.random() * 0.02 + 0.01
                     });
                 }
@@ -318,149 +295,340 @@
                     p.vx *= 0.98; p.vy *= 0.98; p.alpha -= p.decay;
                     if (p.alpha > 0) {
                         active = true;
-                        this.ctx.save(); this.ctx.globalAlpha = p.alpha;
+                        this.ctx.globalAlpha = p.alpha;
                         this.ctx.beginPath();
                         this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        this.ctx.fillStyle = p.color; this.ctx.fill();
-                        const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-                        gradient.addColorStop(0, p.color); gradient.addColorStop(1, 'transparent');
-                        this.ctx.fillStyle = gradient;
-                        this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
-                        this.ctx.fill(); this.ctx.restore();
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.fill();
                     } else this.particles.splice(i, 1);
                 });
                 if (active) requestAnimationFrame(() => this.animate());
             }
         }
 
-        // 玫瑰花瓣飘落
-        function createPetals(count = 50) {
-            for (let i = 0; i < count; i++) {
-                setTimeout(() => {
-                    const petal = document.createElement('div');
-                    petal.className = 'petal';
-                    petal.style.left = Math.random() * 100 + 'vw';
-                    petal.style.top = '-30px';
-                    petal.style.animation = `petalFall ${Math.random() * 4 + 6}s linear forwards`;
-                    petal.style.transform = `rotate(${Math.random() * 360}deg)`;
-                    petal.style.animationDelay = Math.random() * 0.5 + 's';
-                    document.body.appendChild(petal);
-                    setTimeout(() => petal.remove(), 10000);
-                }, i * 150);
+        // 全局变量
+        let userName = '';
+        const fireworks = new Fireworks(document.getElementById('fireworksCanvas'));
+
+        // 开始旅程
+        function startJourney() {
+            const input = document.getElementById('nameInput');
+            const error = document.getElementById('nameError');
+            
+            if (input.value.trim()) {
+                userName = input.value.trim();
+                error.innerHTML = '';
+                showPage('page2');
+                initSnakeGame();
+            } else {
+                error.innerHTML = '<span style="color: #ff6b9d;">请输入名字哦~</span>';
             }
         }
 
-        // 播放音效
-        function playSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
-                oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialDecayTo ? gainNode.gain.exponentialDecayTo(0.01, audioContext.currentTime + 0.5) : 
-                    gainNode.gain.setValueAtTime(0.01, audioContext.currentTime + 0.5);
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (e) {
-                if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+        // 切换页面
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // 贪吃蛇游戏
+        function initSnakeGame() {
+            const canvas = document.getElementById('snakeGame');
+            const ctx = canvas.getContext('2d');
+            const gridSize = 20;
+            const tileCount = canvas.width / gridSize;
+            
+            let snake = [{x: 10, y: 10}];
+            let food = {x: 15, y: 10};
+            let dx = 1, dy = 0;
+            let score = 0;
+            let level = 1;
+            let gameLoop;
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 绘制网格
+                ctx.strokeStyle = 'rgba(255,100,200,0.1)';
+                for (let i = 0; i <= tileCount; i++) {
+                    ctx.beginPath(); ctx.moveTo(i * gridSize, 0); ctx.lineTo(i * gridSize, canvas.height); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, i * gridSize); ctx.lineTo(canvas.width, i * gridSize); ctx.stroke();
+                }
+
+                // 绘制食物（爱心）
+                drawHeart(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2, '#ff6b9d');
+
+                // 绘制蛇
+                snake.forEach((segment, i) => {
+                    const gradient = ctx.createRadialGradient(
+                        segment.x * gridSize + gridSize/2, segment.y * gridSize + gridSize/2, 0,
+                        segment.x * gridSize + gridSize/2, segment.y * gridSize + gridSize/2, gridSize/2
+                    );
+                    gradient.addColorStop(0, i === 0 ? '#ffd700' : '#c084fc');
+                    gradient.addColorStop(1, i === 0 ? '#ffb700' : '#a78bfa');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.roundRect(segment.x * gridSize + 2, segment.y * gridSize + 2, gridSize - 4, gridSize - 4, 6);
+                    ctx.fill();
+                });
             }
+
+            function drawHeart(x, y, size, color) {
+                ctx.save(); ctx.translate(x, y); ctx.scale(size / 20, size / 20);
+                ctx.beginPath();
+                ctx.moveTo(10, 10);
+                ctx.bezierCurveTo(10, 0, 0, 0, 0, 10);
+                ctx.bezierCurveTo(0, 15, 5, 18, 10, 20);
+                ctx.bezierCurveTo(15, 18, 20, 15, 20, 10);
+                ctx.bezierCurveTo(20, 0, 10, 0, 10, 10);
+                ctx.fillStyle = color; ctx.fill(); ctx.restore();
+            }
+
+            function move() {
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                
+                // 边界检测
+                if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                    resetGame(); return;
+                }
+                
+                // 自身碰撞
+                if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                    resetGame(); return;
+                }
+
+                snake.unshift(head);
+
+                // 吃食物
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    document.getElementById('snakeScore').textContent = score;
+                    spawnFood();
+                    
+                    // 升级检测
+                    if (score >= 20 && level === 1) {
+                        level = 2;
+                        document.getElementById('snakeLevel').textContent = level;
+                        alert('🎉 恭喜通过第一关！即将进入第二关！');
+                        setTimeout(() => {
+                            clearInterval(gameLoop);
+                            showPage('page3');
+                            initLinkGame();
+                        }, 1000);
+                        return;
+                    }
+                } else {
+                    snake.pop();
+                }
+            }
+
+            function spawnFood() {
+                food = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+                if (snake.some(s => s.x === food.x && s.y === food.y)) spawnFood();
+            }
+
+            function resetGame() {
+                snake = [{x: 10, y: 10}];
+                food = {x: 15, y: 10};
+                dx = 1; dy = 0;
+                score = 0;
+                level = 1;
+                document.getElementById('snakeScore').textContent = score;
+                document.getElementById('snakeLevel').textContent = level;
+            }
+
+            function game() { move(); draw(); }
+
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && dy !== 1) { dx = 0; dy = -1; }
+                if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && dy !== -1) { dx = 0; dy = 1; }
+                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && dx !== 1) { dx = -1; dy = 0; }
+                if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && dx !== -1) { dx = 1; dy = 0; }
+            });
+
+            gameLoop = setInterval(game, 250);
+        }
+
+        // 连连看游戏
+        function initLinkGame() {
+            const canvas = document.getElementById('linkGame');
+            const ctx = canvas.getContext('2d');
+            const gridSize = 40;
+            const cols = 8, rows = 6;
+            const totalPairs = (cols * rows) / 2;
+            
+            let board = [];
+            let selected = [];
+            let matched = 0;
+            let heartTypes = ['❤️', '❤️', '💗', '💗', '💖', '💖', '💕', '💕', '💝', '�', '�💞', '�', '�💘', '�', '�', '💓', '�', '�'];
+
+            function initBoard() {
+                board = [];
+                const pairs = [];
+                for (let i = 0; i < totalPairs; i++) {
+                    pairs.push(i, i);
+                }
+                // 洗牌
+                for (let i = pairs.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+                }
+                for (let r = 0; r < rows; r++) {
+                    board[r] = [];
+                    for (let c = 0; c < cols; c++) {
+                        board[r][c] = { type: pairs[r * cols + c], matched: false };
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const x = c * gridSize;
+                        const y = r * gridSize;
+                        
+                        if (board[r][c].matched) {
+                            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
+                        } else {
+                            const isSelected = selected.some(s => s.r === r && s.c === c);
+                            ctx.fillStyle = isSelected ? 'rgba(255,215,0,0.3)' : 'rgba(255,100,200,0.2)';
+                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
+                            
+                            ctx.font = '24px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(heartTypes[board[r][c].type], x + gridSize/2, y + gridSize/2);
+                        }
+                    }
+                }
+            }
+
+            function canLink(r1, c1, r2, c2) {
+                if (r1 === r2 && c1 === c2) return false;
+                if (board[r1][c1].type !== board[r2][c2].type) return false;
+                
+                // 直线连接
+                if (r1 === r2) {
+                    let minC = Math.min(c1, c2), maxC = Math.max(c1, c2);
+                    let canPass = true;
+                    for (let c = minC + 1; c < maxC; c++) {
+                        if (!board[r1][c].matched) { canPass = false; break; }
+                    }
+                    if (canPass) return true;
+                }
+                if (c1 === c2) {
+                    let minR = Math.min(r1, r2), maxR = Math.max(r1, r2);
+                    let canPass = true;
+                    for (let r = minR + 1; r < maxR; r++) {
+                        if (!board[r][c1].matched) { canPass = false; break; }
+                    }
+                    if (canPass) return true;
+                }
+
+                // 一次转折
+                if (checkCorner(r1, c1, r1, c2, r2, c2)) return true;
+                if (checkCorner(r1, c1, r2, c1, r2, c2)) return true;
+
+                // 二次转折
+                for (let c = -1; c <= cols; c++) {
+                    if (checkCorner(r1, c1, r1, c, r2, c) && checkCorner(r2, c, r2, c2, r2, c2)) return true;
+                }
+                for (let r = -1; r <= rows; r++) {
+                    if (checkCorner(r1, c1, r, c1, r, c2) && checkCorner(r, c2, r2, c2, r2, c2)) return true;
+                }
+
+                return false;
+            }
+
+            function checkCorner(r1, c1, r2, c2, r3, c3) {
+                if ((r1 === r2 && c2 === c3) || (r2 === r3 && c1 === c2)) {
+                    const isEmpty1 = (r2 < 0 || r2 >= rows || c2 < 0 || c2 >= cols) || board[r2][c2].matched;
+                    const isEmpty2 = (r3 < 0 || r3 >= rows || c3 < 0 || c3 >= cols) || board[r3][c3].matched;
+                    return isEmpty1 && isEmpty2;
+                }
+                return false;
+            }
+
+            function handleClick(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const c = Math.floor(x / gridSize);
+                const r = Math.floor(y / gridSize);
+
+                if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+                if (board[r][c].matched) return;
+
+                const alreadySelected = selected.some(s => s.r === r && s.c === c);
+                if (alreadySelected) return;
+
+                selected.push({ r, c });
+
+                if (selected.length === 2) {
+                    const [first, second] = selected;
+                    if (canLink(first.r, first.c, second.r, second.c)) {
+                        board[first.r][first.c].matched = true;
+                        board[second.r][second.c].matched = true;
+                        matched++;
+                        document.getElementById('linkScore').textContent = (cols * rows) - matched * 2;
+                        
+                        if (matched === totalPairs) {
+                            setTimeout(() => {
+                                alert('🎉 恭喜通过第二关！即将揭晓最终惊喜！');
+                                showPage('page4');
+                                showLetter();
+                                fireworks.createExplosion(window.innerWidth/2, window.innerHeight/2);
+                                setTimeout(() => fireworks.createExplosion(Math.random()*window.innerWidth, Math.random()*window.innerHeight), 200);
+                            }, 500);
+                        }
+                    }
+                    selected = [];
+                }
+
+                draw();
+            }
+
+            initBoard();
+            draw();
+            canvas.addEventListener('click', handleClick);
+        }
+
+        // 显示表白信
+        function showLetter() {
+            const letterContent = `亲爱的${userName}先生：
+
+我时常庆幸你出现在我的生命里，带给我太多太多感动，有很多幸福瞬间。感谢你的出现，温暖了我的世界。我远比你想象中更需要你，因为我真的很在意你，你总能左右我的情绪。
+
+我喜欢每天早上给你发信息，然后睡着等你的消息；也喜欢每天和你互道早安晚安。我喜欢你大小事都跟我说，让我感觉到我被需要。我希望能有一条很长很长的线把我们缠在一起，虽然我未必能给你轰轰烈烈的爱，但我能保证我会陪你很久很久。
+
+我们在一起的时间不长，可我清楚我对你的爱不是一时兴起，也不是新鲜感。等到新鲜感褪去，我依然坚定地站在你身边，绝对不轻易离开，不轻易放弃。我不懂相遇的意义，但我相信绝对不是放弃。你像礼物一样闯进我的世界里，我细数，我珍重。
+
+我希望你能读懂我的心思。我是一个嘴硬、生气爱说反话、频繁流眼泪、占有欲强的小女孩。我改不掉一生气就说反话、一委屈就掉眼泪的毛病。我不愿意暴露自己内心的脆弱敏感，遇事总让你猜，可我忘了你是一个小男孩，不是我肚子里的蛔虫，没有办法猜到我真正的想法。
+
+我还任性，喜欢跟你闹脾气，总是胡思乱想。我总无理取闹，想以此来确定我在你心里的分量。其实我想告诉你，我依赖你，我害怕失去你，谢谢你包容我的孩子气。
+
+我想告诉你，我爱你的一切，你的全部我都喜欢。你的眼睛，你的鼻子，你的耳朵，你的名字，你的性格，你的外貌，你的开朗，你的固执，你的微笑，你的优点，你的不足。好好吃饭的你，陪我闹的时候的你，我永远爱你。
+
+相爱的话，即使不能天天见面，我知道你不会走，你知道我不会变，这就足够了。熬过这段年纪，以后无论天涯海北，你去哪我都跟，好不好。`;
+
+            document.getElementById('letterName').textContent = userName;
+            document.getElementById('letterContent').textContent = letterContent;
         }
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            const starsCanvas = document.getElementById('starsCanvas');
-            const heartsCanvas = document.getElementById('heartsCanvas');
-            const fireworksCanvas = document.getElementById('fireworksCanvas');
-            
-            const starField = new StarField(starsCanvas);
-            const heartBubbles = new HeartBubbles(heartsCanvas);
-            const fireworks = new Fireworks(fireworksCanvas);
-            
-            const nameInput = document.getElementById('nameInput');
-            const nameDisplay = document.getElementById('nameDisplay');
-            const acceptBtn = document.getElementById('acceptBtn');
-            const thinkBtn = document.getElementById('thinkBtn');
-            const coquetryText = document.getElementById('coquetryText');
-            const successOverlay = document.getElementById('successOverlay');
-            const daysCount = document.getElementById('daysCount');
-            
-            // 随机天数
-            daysCount.textContent = Math.floor(Math.random() * 365) + 1;
-            
-            // 名字输入
-            nameInput.addEventListener('input', (e) => {
-                nameDisplay.textContent = e.target.value || 'XXX';
-            });
-            
-            // 鼠标移动视差
-            document.addEventListener('mousemove', (e) => {
-                starField.setMousePosition(e.clientX, e.clientY);
-            });
-            
-            // 触摸移动视差
-            document.addEventListener('touchmove', (e) => {
-                const touch = e.touches[0];
-                starField.setMousePosition(touch.clientX, touch.clientY);
-            });
-            
-            // 窗口大小调整
+            new StarField(document.getElementById('starsCanvas'));
             window.addEventListener('resize', () => {
-                starField.resize();
-                heartBubbles.resize();
                 fireworks.resize();
-            });
-            
-            // "我愿意"按钮
-            acceptBtn.addEventListener('click', () => {
-                playSound();
-                fireworks.createExplosion(window.innerWidth / 2, window.innerHeight / 2);
-                setTimeout(() => fireworks.createExplosion(Math.random() * window.innerWidth, Math.random() * window.innerHeight), 200);
-                setTimeout(() => fireworks.createExplosion(Math.random() * window.innerWidth, Math.random() * window.innerHeight), 400);
-                createPetals();
-                successOverlay.classList.add('show');
-            });
-            
-            // "再想想"按钮 - 害羞躲避效果
-            let escapeCount = 0;
-            thinkBtn.addEventListener('mouseenter', (e) => {
-                if (escapeCount >= 3) return;
-                
-                const btn = e.target;
-                const container = btn.parentElement;
-                const rect = container.getBoundingClientRect();
-                const btnRect = btn.getBoundingClientRect();
-                
-                const maxX = rect.width - btnRect.width - 20;
-                const maxY = rect.height - btnRect.height - 20;
-                
-                const newX = Math.random() * maxX;
-                const newY = Math.random() * maxY;
-                
-                btn.style.position = 'relative';
-                btn.style.left = newX + 'px';
-                btn.style.top = newY + 'px';
-                
-                escapeCount++;
-                coquetryText.classList.add('show');
-                
-                if (escapeCount >= 3) {
-                    setTimeout(() => {
-                        btn.style.left = '';
-                        btn.style.top = '';
-                        escapeCount = 0;
-                        coquetryText.classList.remove('show');
-                    }, 2000);
-                }
-            });
-            
-            thinkBtn.addEventListener('click', () => {
-                coquetryText.classList.add('show');
-                setTimeout(() => coquetryText.classList.remove('show'), 2000);
             });
         });
     </script>
