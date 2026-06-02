@@ -308,10 +308,7 @@
                 <div class="letter-title">💕 给<span id="letterName">XXX</span>先生的一封信 💕</div>
                 <div class="letter-content" id="letterContent"></div>
             </div>
-            <audio id="backgroundMusic" loop>
-                <source src="https://music.163.com/song/media/outer/url?id=1972800112.mp3" type="audio/mpeg">
-            </audio>
-            <button id="musicToggle" class="music-btn" onclick="toggleMusic()">🎵 播放音乐</button>
+            
         </div>
     </div>
 
@@ -784,23 +781,6 @@
 
             document.getElementById('letterName').textContent = userName;
             document.getElementById('letterContent').textContent = letterContent;
-        }
-
-        // 背景音乐控制
-        function toggleMusic() {
-            const audio = document.getElementById('backgroundMusic');
-            const btn = document.getElementById('musicToggle');
-            
-            if (audio.paused) {
-                audio.play().then(() => {
-                    btn.innerHTML = '🎵 暂停音乐';
-                }).catch(err => {
-                    console.log('自动播放被阻止，请手动点击播放');
-                });
-            } else {
-                audio.pause();
-                btn.innerHTML = '🎵 播放音乐';
-            }
         }
 
         // 初始化
