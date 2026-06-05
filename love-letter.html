@@ -530,10 +530,10 @@
             </div>
         </div>
 
-        <!-- 场景3：图形密码 -->
+        <!-- 场景3：心形密码 -->
         <div class="scene" id="scene3">
             <div class="scene-header">
-                <span class="scene-title">🎨 图形密码</span>
+                <span class="scene-title">🎨 心形密码</span>
                 <span class="scene-number">3/5</span>
             </div>
             
@@ -542,27 +542,27 @@
             </div>
 
             <div class="dialog-box">
-                <div class="dialog-text">🎯 墙上有一个3x3的点阵面板。根据之前收集的线索，你需要按正确的顺序点击这些点...</div>
+                <div class="dialog-text">🎯 墙上有一个3x3的点阵面板。根据线索，你需要按正确的顺序点击这些点...</div>
             </div>
 
             <div class="puzzle-area">
                 <div class="puzzle-title">💡 线索提示</div>
-                <div class="puzzle-content">你在镜子里看到了一个心形的倒影。把心形画在3x3的格子上，按笔画顺序点击对应的位置。</div>
+                <div class="puzzle-content">你在镜子里看到了一串数字：403752。按照这个顺序依次点击对应的格子。</div>
             </div>
 
             <div class="pattern-grid" id="patternGrid">
-                <div class="pattern-cell" onclick="selectPatternCell(0)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(1)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(2)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(3)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(4)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(5)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(6)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(7)"></div>
-                <div class="pattern-cell" onclick="selectPatternCell(8)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(0)">0</div>
+                <div class="pattern-cell" onclick="selectPatternCell(1)">1</div>
+                <div class="pattern-cell" onclick="selectPatternCell(2)">2</div>
+                <div class="pattern-cell" onclick="selectPatternCell(3)">3</div>
+                <div class="pattern-cell" onclick="selectPatternCell(4)">4</div>
+                <div class="pattern-cell" onclick="selectPatternCell(5)">5</div>
+                <div class="pattern-cell" onclick="selectPatternCell(6)">6</div>
+                <div class="pattern-cell" onclick="selectPatternCell(7)">7</div>
+                <div class="pattern-cell" onclick="selectPatternCell(8)">8</div>
             </div>
 
-            <button class="submit-btn" onclick="checkPattern()">✅ 确认图形</button>
+            <button class="submit-btn" onclick="checkPattern()">✅ 确认顺序</button>
             <button class="submit-btn" style="background: linear-gradient(135deg, #9e9e9e, #616161); margin-top: 5px;" onclick="resetPattern()">🔄 重置</button>
 
             <button class="hint-btn" onclick="showHint('scene3')">💡 获取提示</button>
@@ -697,7 +697,7 @@
         const correctAnswers = {
             scene1: '1215', // 3:00 → 时针分针交换 → 12:15 → 1215
             scene2: '30',   // 规律：n(n+1) → 5×6=30
-            scene3: [1, 3, 4, 5, 7, 2, 6, 0, 8], // 心形笔画顺序
+            scene3: [4, 0, 3, 7, 5, 2], // 心形点击顺序 403752
             scene4: ['Charlie', 'Bob', 'Alice'] // 逻辑推理答案
         };
 
@@ -811,9 +811,9 @@
                 // 计算正确的最终密码
                 const part1 = correctAnswers.scene1;      // 1215
                 const part2 = correctAnswers.scene2;      // 30
-                const part3 = correctAnswers.scene3.length.toString(); // 9
+                const part3 = correctAnswers.scene3.length.toString(); // 6
                 const part4 = correctAnswers.scene4.length.toString(); // 3
-                const finalPassword = part1 + part2 + part3 + part4; // 12153093
+                const finalPassword = part1 + part2 + part3 + part4; // 12153063
                 
                 if (password === finalPassword) {
                     alert('🎉 恭喜！成功打开情书！');
@@ -849,7 +849,7 @@
             
             // 检查长度是否相同
             if (patternSelection.length !== correct.length) {
-                showError('请按顺序点击心形的所有点！');
+                showError(`请按顺序点击 ${correct.length} 个点！`);
                 return;
             }
             
