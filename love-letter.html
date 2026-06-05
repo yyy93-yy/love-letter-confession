@@ -3,769 +3,910 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💕 爱的旅程 💕</title>
+    <title>🧩 恋爱密室大逃亡 💕</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%);
             min-height: 100vh;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
-            overflow: hidden;
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            color: #fff;
-        }
-        #starsCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            pointer-events: none; z-index: 0;
+            overflow-x: hidden;
         }
 
-        /* 通用页面容器 */
-        .page {
-            position: relative; z-index: 10;
-            width: 100%; height: 100vh;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            padding: 20px;
-            display: none;
+        /* 可爱装饰 */
+        .decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
         }
-        .page.active { display: flex; }
 
-        /* 毛玻璃卡片 */
-        .glass-card {
-            width: 90%; max-width: 500px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 40px rgba(255, 100, 200, 0.3), 0 0 80px rgba(150, 100, 255, 0.2);
+        .deco {
+            position: absolute;
+            font-size: 24px;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* 主容器 */
+        .game-container {
+            position: relative;
+            z-index: 1;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* 标题画面 */
+        .title-screen {
             text-align: center;
+            padding: 50px 20px;
         }
-        .glass-card::before {
-            content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-            border-radius: 26px;
-            background: linear-gradient(45deg, #ff6b9d, #c084fc, #60a5fa, #ff6b9d);
-            background-size: 400% 400%; z-index: -1;
-            animation: borderGlow 4s ease infinite; opacity: 0.7;
-        }
-        @keyframes borderGlow { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
 
-        /* 标题 */
-        .title {
-            font-size: 28px; font-weight: bold;
-            background: linear-gradient(135deg, #ffc0cb, #e0aaff, #c4b5fd);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        .title-screen h1 {
+            font-size: 30px;
+            color: #00bcd4;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .title-screen p {
+            color: #78909c;
+            font-size: 15px;
             margin-bottom: 30px;
         }
-        .subtitle {
-            font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 30px;
+
+        .start-btn {
+            background: linear-gradient(135deg, #00bcd4, #0097a7);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
         }
 
-        /* 输入框 */
-        .name-input {
-            width: 250px; padding: 15px 25px;
-            border: 2px solid rgba(255, 100, 200, 0.5); border-radius: 40px;
-            background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 18px;
-            text-align: center; outline: none;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        .name-input:focus {
-            border-color: #ff6b9d;
-            box-shadow: 0 0 20px rgba(255, 100, 200, 0.4);
-        }
-        .name-input::placeholder { color: rgba(255,255,255,0.4); }
-
-        /* 按钮 */
-        .btn {
-            padding: 16px 40px; font-size: 18px; font-weight: bold;
-            border: none; border-radius: 40px; cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.5);
-        }
-        .btn:hover {
+        .start-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.7);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.6);
+        }
+
+        /* 游戏场景 */
+        .scene {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .scene.active {
+            display: block;
+        }
+
+        .scene-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .scene-title {
+            font-size: 20px;
+            color: #00bcd4;
+            font-weight: bold;
+        }
+
+        .scene-number {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* 物品栏 */
+        .inventory {
+            background: linear-gradient(135deg, #f3e5f5, #e8eaf6);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .inventory-title {
+            font-size: 12px;
+            color: #7e57c2;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .inventory-items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .inv-item {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid #ce93d8;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .inv-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(126, 87, 194, 0.3);
+        }
+
+        .inv-item.selected {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.3);
+        }
+
+        /* 谜题区域 */
+        .puzzle-area {
+            background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .puzzle-title {
+            font-size: 14px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .puzzle-content {
+            font-size: 13px;
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        /* 密码输入 */
+        .password-section {
+            margin-bottom: 15px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00bcd4;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .password-input:focus {
+            border-color: #0097a7;
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00bcd4, #0097a7);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 提示按钮 */
+        .hint-btn {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #8d6e63;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .hint-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 物品交互区 */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .item {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.5);
+        }
+
+        .item.locked {
+            opacity: 0.4;
+            filter: grayscale(0.5);
+            cursor: not-allowed;
+        }
+
+        .item.solved::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #4caf50;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-label {
+            font-size: 10px;
+            color: #8d6e63;
+            margin-top: 4px;
+        }
+
+        /* 对话框 */
+        .dialog-box {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .dialog-text {
+            color: #e65100;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         /* 进度条 */
         .progress-bar {
-            width: 100%; height: 8px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 20px;
+            background: #e0f2f1;
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 15px;
+            height: 20px;
         }
+
         .progress-fill {
+            background: linear-gradient(90deg, #00bcd4, #4db6ac);
             height: 100%;
-            background: linear-gradient(90deg, #ff6b9d, #c084fc);
-            border-radius: 4px;
+            border-radius: 15px;
             transition: width 0.5s ease;
         }
 
-        /* 贪吃蛇游戏 */
-        #snakeGame {
-            background: rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,100,200,0.5);
-            border-radius: 12px;
-        }
-        .game-info {
-            display: flex; justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-        .game-score, .game-level {
-            color: #ffd700;
-        }
-
-        /* 连连看游戏 */
-        #linkGame {
-            background: rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,100,200,0.5);
-            border-radius: 12px;
-        }
-
-        /* 表白信 */
-        .letter-container {
-            max-height: 70vh;
-            overflow-y: auto;
-            text-align: left;
-            line-height: 2;
-            color: rgba(255,255,255,0.9);
-        }
-        .letter-title {
+        /* 结果页面 */
+        .result-scene {
             text-align: center;
-            font-size: 24px;
-            color: #ffd700;
-            margin-bottom: 20px;
+        }
+
+        .letter-container {
+            background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 3px solid #f48fb1;
+            box-shadow: 0 8px 32px rgba(244, 143, 177, 0.3);
+        }
+
+        .letter-title {
+            font-size: 18px;
+            color: #c2185b;
+            margin-bottom: 15px;
             font-weight: bold;
         }
+
         .letter-content {
-            font-size: 15px;
+            color: #880e4f;
+            font-size: 13px;
+            line-height: 1.8;
             white-space: pre-line;
+            text-align: left;
         }
 
-        /* 烟花效果 */
-        #fireworksCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 100; display: none;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 600px) {
-            .title { font-size: 22px; }
-            .glass-card { padding: 20px 15px; width: 95%; }
-            .name-input { width: 180px; padding: 12px 15px; font-size: 16px; }
-            .btn { padding: 14px 28px; font-size: 16px; }
-            #snakeGame, #linkGame { width: 100%; max-width: 320px; height: auto; }
-            .letter-container { max-height: 60vh; }
-            .letter-title { font-size: 20px; }
-            .letter-content { font-size: 14px; }
-        }
-
-        /* 触摸控制按钮 */
-        .touch-controls {
-            display: none;
+        /* 成功动画 */
+        .success-effect {
             position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            font-size: 36px;
+            animation: successFloat 2s ease-out forwards;
+            pointer-events: none;
             z-index: 100;
         }
-        .touch-pad {
-            width: 200px;
-            height: 200px;
+
+        @keyframes successFloat {
+            0% { opacity: 1; transform: translateY(0) scale(0.5); }
+            50% { opacity: 1; transform: translateY(-30px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1); }
+        }
+
+        /* 错误提示 */
+        .error-message {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #c62828;
+            font-size: 12px;
+            text-align: center;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 图形密码 */
+        .pattern-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
             gap: 5px;
+            margin-bottom: 15px;
         }
-        .touch-btn {
-            background: rgba(255, 100, 200, 0.3);
-            border: 2px solid rgba(255, 100, 200, 0.6);
-            border-radius: 12px;
-            font-size: 24px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .pattern-cell {
+            aspect-ratio: 1;
+            background: #e0f2f1;
+            border-radius: 8px;
+            border: 2px solid #b2dfdb;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .touch-btn:hover, .touch-btn:active {
-            background: rgba(255, 100, 200, 0.6);
-            transform: scale(0.95);
-        }
-        .touch-btn.center {
-            background: transparent;
-            border: none;
-            cursor: default;
-        }
-        .touch-btn.center:hover {
-            transform: none;
+
+        .pattern-cell:hover {
+            background: #b2dfdb;
         }
 
-        .music-btn {
-            background: linear-gradient(135deg, #ff6b9d, #c44569);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        .pattern-cell.selected {
+            background: #00bcd4;
+            border-color: #00838f;
         }
-        .music-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
-        }
-        
-        @media (max-width: 600px) {
-            .touch-controls { display: block; }
+
+        /* 手机适配 */
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .title-screen h1 {
+                font-size: 24px;
+            }
+            
+            .scene {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="starsCanvas"></canvas>
-    <canvas id="fireworksCanvas"></canvas>
+    <!-- 装饰背景 -->
+    <div class="decorations" id="decorations"></div>
 
-    <!-- 页面1：输入名字 -->
-    <div class="page active" id="page1">
-        <div class="glass-card" style="position: relative;">
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 0%;"></div>
-            </div>
-            <h1 class="title">💕 爱的旅程开始 💕</h1>
-            <p class="subtitle">请输入您的名字，开启这段浪漫之旅</p>
-            <input type="text" class="name-input" id="nameInput" placeholder="请输入名字" maxlength="10" />
-            <div style="height: 20px;" id="nameError"></div>
-            <button class="btn" onclick="startJourney()">开始冒险 ❤️</button>
+    <!-- 游戏容器 -->
+    <div class="game-container">
+        <!-- 标题画面 -->
+        <div class="title-screen active" id="titleScreen">
+            <h1>🧩 恋爱密室大逃亡 💕</h1>
+            <p>运用你的智慧，解开层层谜题，找到那份隐藏的情书...</p>
+            <button class="start-btn" onclick="startGame()">开始挑战 🚪</button>
         </div>
-    </div>
 
-    <!-- 页面2：贪吃蛇游戏 -->
-    <div class="page" id="page2">
-        <div class="glass-card" style="position: relative;">
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 33%;"></div>
-            </div>
-            <h1 class="title">🐍 第一关：贪吃蛇大作战</h1>
-            <p class="subtitle">帮助小蛇吃到20个爱心，通过第一关！</p>
-            <div class="game-info">
-                <span>得分: <span class="game-score" id="snakeScore">0</span></span>
-                <span>关卡: <span class="game-level" id="snakeLevel">1</span></span>
-            </div>
-            <canvas id="snakeGame" width="320" height="320"></canvas>
-            <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
-                使用 ↑ ↓ ← → 或 WASD 控制方向
-            </p>
-        </div>
-    </div>
-
-    <!-- 触摸控制按钮 -->
-    <div class="touch-controls" id="touchControls">
-        <div class="touch-pad">
-            <div></div>
-            <div class="touch-btn" onclick="snakeMove('up')">↑</div>
-            <div></div>
-            <div class="touch-btn" onclick="snakeMove('left')">←</div>
-            <div class="touch-btn center"></div>
-            <div class="touch-btn" onclick="snakeMove('right')">→</div>
-            <div></div>
-            <div class="touch-btn" onclick="snakeMove('down')">↓</div>
-            <div></div>
-        </div>
-    </div>
-
-    <!-- 页面3：扫雷游戏 -->
-    <div class="page" id="page3">
-        <div class="glass-card" style="position: relative;">
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 66%;"></div>
-            </div>
-            <h1 class="title">💣 第二关：爱心扫雷</h1>
-            <p class="subtitle">找出所有爱心，避开炸弹！</p>
-            <div class="game-info">
-                <span>💖 爱心: <span class="game-score" id="mineHearts">10</span></span>
-                <span>💣 剩余: <span class="game-level" id="mineRemaining">34</span></span>
-            </div>
-            <canvas id="mineGame" width="320" height="320"></canvas>
-            <p style="margin-top: 15px; font-size: 14px; color: rgba(255,255,255,0.6);">
-                💡 游戏规则：点击格子翻开，找出所有爱心获胜！小心炸弹！
-            </p>
-        </div>
-    </div>
-
-    <!-- 页面4：表白信 -->
-    <div class="page" id="page4">
-        <div class="glass-card" style="position: relative; max-height: 85vh;">
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 100%;"></div>
-            </div>
-            <div class="letter-container">
-                <div class="letter-title">💕 给<span id="letterName">XXX</span>先生的一封信 💕</div>
-                <div class="letter-content" id="letterContent"></div>
+        <!-- 场景1：神秘玄关 -->
+        <div class="scene" id="scene1">
+            <div class="scene-header">
+                <span class="scene-title">🚪 神秘玄关</span>
+                <span class="scene-number">1/5</span>
             </div>
             
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress1" style="width: 0%;"></div>
+            </div>
+
+            <div class="dialog-box">
+                <div class="dialog-text">🔍 你发现自己被困在一个神秘的房间里。门上有一个密码锁，旁边的桌子上有一些奇怪的物品...</div>
+            </div>
+
+            <div class="items-grid">
+                <div class="item" onclick="interactItem('scene1', 'clock')">🕐<span class="item-label">时钟</span></div>
+                <div class="item" onclick="interactItem('scene1', 'plant')">🌱<span class="item-label">盆栽</span></div>
+                <div class="item" onclick="interactItem('scene1', 'keyhole')">🔑<span class="item-label">钥匙孔</span></div>
+                <div class="item" onclick="interactItem('scene1', 'letter')">📝<span class="item-label">纸条</span></div>
+                <div class="item" onclick="interactItem('scene1', 'mirror')">🪞<span class="item-label">镜子</span></div>
+                <div class="item" onclick="interactItem('scene1', 'table')">🪑<span class="item-label">桌子</span></div>
+            </div>
+
+            <div class="puzzle-area" id="puzzle1" style="display: none;">
+                <div class="puzzle-title">💡 谜题提示</div>
+                <div class="puzzle-content">时钟显示的时间是3点整。如果你把时针和分针交换位置，会得到什么时间？把这个时间的数字连起来就是密码（例如12:30 → 1230）。</div>
+            </div>
+
+            <div class="password-section" id="passwordSection1" style="display: none;">
+                <input type="text" class="password-input" id="password1" placeholder="输入4位数字密码" maxlength="4">
+                <button class="submit-btn" onclick="checkPassword('scene1')">🔓 解锁门</button>
+            </div>
+
+            <button class="hint-btn" onclick="showHint('scene1')">💡 获取提示</button>
+
+            <div class="inventory">
+                <div class="inventory-title">🎒 物品栏</div>
+                <div class="inventory-items" id="inventory1"></div>
+            </div>
+        </div>
+
+        <!-- 场景2：数字迷宫 -->
+        <div class="scene" id="scene2">
+            <div class="scene-header">
+                <span class="scene-title">🔢 数字迷宫</span>
+                <span class="scene-number">2/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress2" style="width: 20%;"></div>
+            </div>
+
+            <div class="dialog-box">
+                <div class="dialog-text">📊 墙上有一组数字谜题。看起来需要找出其中的规律才能继续前进...</div>
+            </div>
+
+            <div class="puzzle-area">
+                <div class="puzzle-title">🔢 数字规律题</div>
+                <div class="puzzle-content">
+                    <p style="text-align: center; font-size: 16px; margin-bottom: 10px;">找出缺失的数字：</p>
+                    <p style="text-align: center; font-size: 18px; font-weight: bold; color: #00bcd4;">
+                        2, 6, 12, 20, ?, 42
+                    </p>
+                </div>
+            </div>
+
+            <input type="text" class="password-input" id="password2" placeholder="输入缺失的数字" maxlength="2">
+            <button class="submit-btn" onclick="checkPassword('scene2')">✅ 提交答案</button>
+
+            <button class="hint-btn" onclick="showHint('scene2')">💡 获取提示</button>
+
+            <div class="inventory">
+                <div class="inventory-title">🎒 物品栏</div>
+                <div class="inventory-items" id="inventory2"></div>
+            </div>
+        </div>
+
+        <!-- 场景3：图形密码 -->
+        <div class="scene" id="scene3">
+            <div class="scene-header">
+                <span class="scene-title">🎨 图形密码</span>
+                <span class="scene-number">3/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress3" style="width: 40%;"></div>
+            </div>
+
+            <div class="dialog-box">
+                <div class="dialog-text">🎯 墙上有一个3x3的点阵面板。根据之前收集的线索，你需要按正确的顺序点击这些点...</div>
+            </div>
+
+            <div class="puzzle-area">
+                <div class="puzzle-title">💡 线索提示</div>
+                <div class="puzzle-content">你在镜子里看到了一个心形的倒影。把心形画在3x3的格子上，按笔画顺序点击对应的位置。</div>
+            </div>
+
+            <div class="pattern-grid" id="patternGrid">
+                <div class="pattern-cell" onclick="selectPatternCell(0)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(1)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(2)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(3)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(4)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(5)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(6)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(7)"></div>
+                <div class="pattern-cell" onclick="selectPatternCell(8)"></div>
+            </div>
+
+            <button class="submit-btn" onclick="checkPattern()">✅ 确认图形</button>
+            <button class="submit-btn" style="background: linear-gradient(135deg, #9e9e9e, #616161); margin-top: 5px;" onclick="resetPattern()">🔄 重置</button>
+
+            <button class="hint-btn" onclick="showHint('scene3')">💡 获取提示</button>
+
+            <div class="inventory">
+                <div class="inventory-title">🎒 物品栏</div>
+                <div class="inventory-items" id="inventory3"></div>
+            </div>
+        </div>
+
+        <!-- 场景4：逻辑推理 -->
+        <div class="scene" id="scene4">
+            <div class="scene-header">
+                <span class="scene-title">🧠 逻辑推理室</span>
+                <span class="scene-number">4/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress4" style="width: 60%;"></div>
+            </div>
+
+            <div class="dialog-box">
+                <div class="dialog-text">🧐 这里有一个复杂的逻辑谜题。你需要根据线索推断出正确的答案...</div>
+            </div>
+
+            <div class="puzzle-area">
+                <div class="puzzle-title">🕵️ 逻辑谜题</div>
+                <div class="puzzle-content">
+                    <p>有三个人：Alice、Bob、Charlie</p>
+                    <p>• Alice说："我不是第一个"</p>
+                    <p>• Bob说："Charlie在我前面"</p>
+                    <p>• Charlie说："Alice在Bob后面"</p>
+                    <p style="margin-top: 10px; color: #e65100; font-weight: bold;">问题：他们的顺序是什么？（用逗号分隔，如：Alice,Bob,Charlie）</p>
+                </div>
+            </div>
+
+            <input type="text" class="password-input" id="password4" placeholder="输入顺序，如：A,B,C" maxlength="20">
+            <button class="submit-btn" onclick="checkPassword('scene4')">✅ 提交答案</button>
+
+            <button class="hint-btn" onclick="showHint('scene4')">💡 获取提示</button>
+
+            <div class="inventory">
+                <div class="inventory-title">🎒 物品栏</div>
+                <div class="inventory-items" id="inventory4"></div>
+            </div>
+        </div>
+
+        <!-- 场景5：最终密码 -->
+        <div class="scene" id="scene5">
+            <div class="scene-header">
+                <span class="scene-title">💝 最终密码</span>
+                <span class="scene-number">5/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress5" style="width: 80%;"></div>
+            </div>
+
+            <div class="dialog-box">
+                <div class="dialog-text">🎉 恭喜你来到最后一关！现在需要输入最终密码。提示：将前四关的答案按顺序组合起来...</div>
+            </div>
+
+            <div class="puzzle-area">
+                <div class="puzzle-title">🔐 最终密码</div>
+                <div class="puzzle-content">
+                    <p>将以下答案按顺序组合：</p>
+                    <p>• 第一关答案（4位）</p>
+                    <p>• 第二关答案（2位）</p>
+                    <p>• 第三关答案对应的心形点数量（1位）</p>
+                    <p>• 第四关答案中名字的数量（1位）</p>
+                    <p style="margin-top: 10px; color: #c2185b; font-weight: bold;">总密码长度：8位数字</p>
+                </div>
+            </div>
+
+            <input type="text" class="password-input" id="password5" placeholder="输入8位最终密码" maxlength="8">
+            <button class="submit-btn" onclick="checkPassword('scene5')">💌 打开情书</button>
+
+            <button class="hint-btn" onclick="showHint('scene5')">💡 获取提示</button>
+
+            <div class="inventory">
+                <div class="inventory-title">🎒 物品栏</div>
+                <div class="inventory-items" id="inventory5"></div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div class="scene result-scene" id="resultScene">
+            <div class="scene-title">💕 恭喜通关！💕</div>
+            
+            <div class="letter-container">
+                <div class="letter-title">💌 给你的一封信 💌</div>
+                <div class="letter-content" id="letterContent"></div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="start-btn" onclick="restartGame()">🔄 重新挑战</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 星空背景
-        class StarField {
-            constructor(canvas) {
-                this.canvas = canvas; this.ctx = canvas.getContext('2d');
-                this.stars = []; this.resize(); this.initStars(); this.animate();
-            }
-            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
-            initStars() {
-                this.stars = [];
-                const starCount = Math.floor((this.canvas.width * this.canvas.height) / 3000);
-                for (let i = 0; i < starCount; i++) {
-                    this.stars.push({
-                        x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height,
-                        radius: Math.random() * 2 + 0.5, speed: Math.random() * 0.3 + 0.1,
-                        twinkleSpeed: Math.random() * 0.02 + 0.01,
-                        twinklePhase: Math.random() * Math.PI * 2
-                    });
-                }
-            }
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.stars.forEach(star => {
-                    star.twinklePhase += star.twinkleSpeed;
-                    const alpha = (Math.sin(star.twinklePhase) * 0.3 + 0.7) * 0.8;
-                    this.ctx.beginPath();
-                    this.ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                    this.ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-                    this.ctx.fill();
-                    star.y -= star.speed;
-                    if (star.y < -star.radius) { star.y = this.canvas.height + star.radius; star.x = Math.random() * this.canvas.width; }
-                });
-                requestAnimationFrame(() => this.animate());
+        // 初始化装饰
+        function initDecorations() {
+            const decos = document.getElementById('decorations');
+            const emojis = ['💕', '💎', '⭐', '✨', '💫', '🌸', '🦋', '🌈', '🧁', '🍬'];
+            for (let i = 0; i < 30; i++) {
+                const deco = document.createElement('div');
+                deco.className = 'deco';
+                deco.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                deco.style.left = Math.random() * 100 + '%';
+                deco.style.top = Math.random() * 100 + '%';
+                deco.style.animationDelay = Math.random() * 4 + 's';
+                deco.style.fontSize = (16 + Math.random() * 12) + 'px';
+                decos.appendChild(deco);
             }
         }
 
-        // 烟花效果
-        class Fireworks {
-            constructor(canvas) {
-                this.canvas = canvas; this.ctx = canvas.getContext('2d');
-                this.particles = []; this.resize();
-            }
-            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
-            createExplosion(x, y) {
-                const colors = ['#ff6b9d', '#ff8fab', '#c084fc', '#a78bfa', '#ffd700'];
-                for (let i = 0; i < 80; i++) {
-                    const angle = (Math.PI * 2 * i) / 80;
-                    const speed = Math.random() * 4 + 2;
-                    const color = colors[Math.floor(Math.random() * colors.length)];
-                    this.particles.push({
-                        x: x, y: y,
-                        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                        gravity: 0.12, size: Math.random() * 5 + 2,
-                        color: color, alpha: 1, decay: Math.random() * 0.02 + 0.01
-                    });
-                }
-                this.canvas.style.display = 'block';
-                this.animate();
-            }
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                let active = false;
-                this.particles.forEach((p, i) => {
-                    p.vy += p.gravity; p.x += p.vx; p.y += p.vy;
-                    p.vx *= 0.98; p.vy *= 0.98; p.alpha -= p.decay;
-                    if (p.alpha > 0) {
-                        active = true;
-                        this.ctx.globalAlpha = p.alpha;
-                        this.ctx.beginPath();
-                        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        this.ctx.fillStyle = p.color;
-                        this.ctx.fill();
-                    } else this.particles.splice(i, 1);
-                });
-                if (active) requestAnimationFrame(() => this.animate());
-            }
+        // 游戏状态
+        let gameState = {
+            currentScene: 1,
+            answers: {
+                scene1: '',
+                scene2: '',
+                scene3: '',
+                scene4: ''
+            },
+            inventory: [],
+            hintsUsed: 0
+        };
+
+        // 正确答案
+        const correctAnswers = {
+            scene1: '1215', // 3:00 → 时针分针交换 → 12:15 → 1215
+            scene2: '30',   // 规律：n(n+1) → 5×6=30
+            scene3: [1, 3, 4, 5, 7, 2, 6, 0, 8], // 心形笔画顺序
+            scene4: ['Bob', 'Alice', 'Charlie'] // 逻辑推理答案
+        };
+
+        // 开始游戏
+        function startGame() {
+            gameState = {
+                currentScene: 1,
+                answers: { scene1: '', scene2: '', scene3: '', scene4: '' },
+                inventory: [],
+                hintsUsed: 0
+            };
+            document.getElementById('titleScreen').classList.remove('active');
+            document.getElementById('scene1').classList.add('active');
         }
 
-        // 全局变量
-        let userName = '';
-        const fireworks = new Fireworks(document.getElementById('fireworksCanvas'));
-        let snakeDx = 1, snakeDy = 0; // 贪吃蛇方向（用于触摸控制）
-
-        // 开始旅程
-        function startJourney() {
-            const input = document.getElementById('nameInput');
-            const error = document.getElementById('nameError');
+        // 交互物品
+        function interactItem(scene, item) {
+            showSuccessEffect();
             
-            if (input.value.trim()) {
-                userName = input.value.trim();
-                error.innerHTML = '';
-                showPage('page2');
-                initSnakeGame();
-            } else {
-                error.innerHTML = '<span style="color: #ff6b9d;">请输入名字哦~</span>';
+            if (item === 'letter' && scene === 'scene1') {
+                document.getElementById('puzzle1').style.display = 'block';
+                document.getElementById('passwordSection1').style.display = 'block';
+                addToInventory('📝');
             }
-        }
-
-        // 切换页面
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        // 贪吃蛇游戏
-        function initSnakeGame() {
-            const canvas = document.getElementById('snakeGame');
-            const ctx = canvas.getContext('2d');
-            const gridSize = 20;
-            const tileCount = canvas.width / gridSize;
             
-            let snake = [{x: 10, y: 10}];
-            let food = {x: 15, y: 10};
-            snakeDx = 1; snakeDy = 0; // 初始化方向
-            let score = 0;
-            let level = 1;
-            let gameLoop;
-
-            function draw() {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // 绘制网格
-                ctx.strokeStyle = 'rgba(255,100,200,0.1)';
-                for (let i = 0; i <= tileCount; i++) {
-                    ctx.beginPath(); ctx.moveTo(i * gridSize, 0); ctx.lineTo(i * gridSize, canvas.height); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(0, i * gridSize); ctx.lineTo(canvas.width, i * gridSize); ctx.stroke();
-                }
-
-                // 绘制食物（爱心）- 增大爱心尺寸
-                drawHeart(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize * 0.7, '#ff6b9d');
-
-                // 绘制蛇
-                snake.forEach((segment, i) => {
-                    const gradient = ctx.createRadialGradient(
-                        segment.x * gridSize + gridSize/2, segment.y * gridSize + gridSize/2, 0,
-                        segment.x * gridSize + gridSize/2, segment.y * gridSize + gridSize/2, gridSize/2
-                    );
-                    gradient.addColorStop(0, i === 0 ? '#ffd700' : '#c084fc');
-                    gradient.addColorStop(1, i === 0 ? '#ffb700' : '#a78bfa');
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.roundRect(segment.x * gridSize + 2, segment.y * gridSize + 2, gridSize - 4, gridSize - 4, 6);
-                    ctx.fill();
-                });
+            if (item === 'mirror' && scene === 'scene1') {
+                addToInventory('🪞');
+                showMessage('镜子里有一个心形的倒影...');
             }
-
-            function drawHeart(x, y, size, color) {
-                ctx.save(); ctx.translate(x, y); ctx.scale(size / 20, size / 20);
-                ctx.beginPath();
-                ctx.moveTo(10, 10);
-                ctx.bezierCurveTo(10, 0, 0, 0, 0, 10);
-                ctx.bezierCurveTo(0, 15, 5, 18, 10, 20);
-                ctx.bezierCurveTo(15, 18, 20, 15, 20, 10);
-                ctx.bezierCurveTo(20, 0, 10, 0, 10, 10);
-                ctx.fillStyle = color; ctx.fill(); ctx.restore();
+            
+            if (item === 'clock' && scene === 'scene1') {
+                addToInventory('🕐');
+                showMessage('时钟显示的时间是3:00...');
             }
+        }
 
-            function move() {
-                const head = {x: snake[0].x + snakeDx, y: snake[0].y + snakeDy};
-                
-                // 边界检测
-                if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                    resetGame(); return;
-                }
-                
-                // 自身碰撞
-                if (snake.some(s => s.x === head.x && s.y === head.y)) {
-                    resetGame(); return;
-                }
-
-                snake.unshift(head);
-
-                // 吃食物
-                if (head.x === food.x && head.y === food.y) {
-                    score += 10;
-                    document.getElementById('snakeScore').textContent = score;
-                    spawnFood();
-                    
-                    // 升级检测
-                    if (score >= 20 && level === 1) {
-                        level = 2;
-                        document.getElementById('snakeLevel').textContent = level;
-                        alert('🎉 恭喜通过第一关！即将进入第二关！');
-                        setTimeout(() => {
-                            clearInterval(gameLoop);
-                            document.getElementById('touchControls').style.display = 'none';
-                            showPage('page3');
-                            initMineGame();
-                        }, 1000);
-                        return;
-                    }
-                } else {
-                    snake.pop();
-                }
+        // 添加物品到物品栏
+        function addToInventory(item) {
+            if (!gameState.inventory.includes(item)) {
+                gameState.inventory.push(item);
+                updateInventory();
             }
+        }
 
-            function spawnFood() {
-                // 确保食物不在边缘，留出2格的距离
-                food = {
-                    x: 2 + Math.floor(Math.random() * (tileCount - 4)),
-                    y: 2 + Math.floor(Math.random() * (tileCount - 4))
-                };
-                if (snake.some(s => s.x === food.x && s.y === food.y)) spawnFood();
-            }
-
-            function resetGame() {
-                snake = [{x: 8, y: 8}];
-                food = {x: 12, y: 8}; // 初始食物放在中间区域
-                snakeDx = 1; snakeDy = 0;
-                score = 0;
-                level = 1;
-                document.getElementById('snakeScore').textContent = score;
-                document.getElementById('snakeLevel').textContent = level;
-            }
-
-            function game() { move(); draw(); }
-
-            // 键盘控制
-            document.addEventListener('keydown', (e) => {
-                if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && snakeDy !== 1) { snakeDx = 0; snakeDy = -1; }
-                if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && snakeDy !== -1) { snakeDx = 0; snakeDy = 1; }
-                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && snakeDx !== 1) { snakeDx = -1; snakeDy = 0; }
-                if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && snakeDx !== -1) { snakeDx = 1; snakeDy = 0; }
+        // 更新物品栏显示
+        function updateInventory() {
+            document.querySelectorAll('.inventory-items').forEach(el => {
+                el.innerHTML = gameState.inventory.map(item => 
+                    `<div class="inv-item">${item}</div>`
+                ).join('');
             });
-
-            // 显示触摸控制按钮
-            document.getElementById('touchControls').style.display = 'block';
-
-            gameLoop = setInterval(game, 350);
         }
 
-        // 触摸控制贪吃蛇移动
-        function snakeMove(direction) {
-            switch(direction) {
-                case 'up': if (snakeDy !== 1) { snakeDx = 0; snakeDy = -1; } break;
-                case 'down': if (snakeDy !== -1) { snakeDx = 0; snakeDy = 1; } break;
-                case 'left': if (snakeDx !== 1) { snakeDx = -1; snakeDy = 0; } break;
-                case 'right': if (snakeDx !== -1) { snakeDx = 1; snakeDy = 0; } break;
-            }
+        // 显示成功效果
+        function showSuccessEffect() {
+            const effects = ['💕', '✨', '⭐', '💫'];
+            const effect = document.createElement('div');
+            effect.className = 'success-effect';
+            effect.textContent = effects[Math.floor(Math.random() * effects.length)];
+            effect.style.left = '50%';
+            effect.style.top = '50%';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 2000);
         }
 
-        // 扫雷游戏
-        function initMineGame() {
-            const canvas = document.getElementById('mineGame');
-            const ctx = canvas.getContext('2d');
-            const gridSize = 40;
-            const cols = 8, rows = 8;
-            const totalCells = cols * rows;
-            const heartCount = 7; // 爱心数量
+        // 显示消息
+        function showMessage(msg) {
+            alert(msg);
+        }
+
+        // 检查密码
+        function checkPassword(scene) {
+            const password = document.getElementById(`password${scene.replace('scene', '')}`).value.trim();
             
-            let board = [];
-            let gameOver = false;
-            let heartsFound = 0;
-            let remainingCells = totalCells;
-
-            // 初始化游戏板
-            function initBoard() {
-                board = [];
-                gameOver = false;
-                heartsFound = 0;
-                remainingCells = totalCells;
-                
-                // 创建空白格子
-                for (let r = 0; r < rows; r++) {
-                    board[r] = [];
-                    for (let c = 0; c < cols; c++) {
-                        board[r][c] = { isHeart: false, isMine: false, isRevealed: false, neighborMines: 0 };
-                    }
-                }
-                
-                // 随机放置爱心
-                let placed = 0;
-                while (placed < heartCount) {
-                    const r = Math.floor(Math.random() * rows);
-                    const c = Math.floor(Math.random() * cols);
-                    if (!board[r][c].isHeart && !board[r][c].isMine) {
-                        board[r][c].isHeart = true;
-                        placed++;
-                    }
-                }
-                
-                // 其余都是炸弹
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        if (!board[r][c].isHeart) {
-                            board[r][c].isMine = true;
-                        }
-                    }
-                }
-                
-                // 计算每个格子周围的炸弹数
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        if (!board[r][c].isHeart) {
-                            let count = 0;
-                            for (let dr = -1; dr <= 1; dr++) {
-                                for (let dc = -1; dc <= 1; dc++) {
-                                    const nr = r + dr;
-                                    const nc = c + dc;
-                                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc].isMine) {
-                                        count++;
-                                    }
-                                }
-                            }
-                            board[r][c].neighborMines = count;
-                        }
-                    }
-                }
-                
-                updateUI();
-            }
-
-            function updateUI() {
-                document.getElementById('mineHearts').textContent = heartsFound + '/' + heartCount;
-                document.getElementById('mineRemaining').textContent = remainingCells;
-            }
-
-            // 绘制游戏
-            function draw() {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const x = c * gridSize;
-                        const y = r * gridSize;
-                        const cell = board[r][c];
-                        
-                        if (cell.isRevealed) {
-                            // 已翻开的格子
-                            ctx.fillStyle = 'rgba(100, 50, 150, 0.3)';
-                            ctx.fillRect(x + 1, y + 1, gridSize - 2, gridSize - 2);
-                            
-                            if (cell.isHeart) {
-                                // 爱心
-                                ctx.font = '24px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText('❤️', x + gridSize/2, y + gridSize/2);
-                            } else if (cell.isMine) {
-                                // 炸弹
-                                ctx.font = '24px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText('💣', x + gridSize/2, y + gridSize/2);
-                            } else if (cell.neighborMines > 0) {
-                                // 数字提示
-                                ctx.font = '20px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillStyle = '#ffd700';
-                                ctx.fillText(cell.neighborMines.toString(), x + gridSize/2, y + gridSize/2);
-                            }
-                        } else {
-                            // 未翻开的格子
-                            ctx.fillStyle = 'rgba(255, 100, 200, 0.4)';
-                            ctx.strokeStyle = 'rgba(255, 100, 200, 0.6)';
-                            ctx.lineWidth = 2;
-                            ctx.fillRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
-                            ctx.strokeRect(x + 2, y + 2, gridSize - 4, gridSize - 4);
-                            
-                            // 问号提示
-                            ctx.font = '20px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                            ctx.fillText('?', x + gridSize/2, y + gridSize/2);
-                        }
-                    }
-                }
-            }
-
-            // 翻开格子
-            function reveal(r, c) {
-                if (r < 0 || r >= rows || c < 0 || c >= cols) return;
-                if (board[r][c].isRevealed || gameOver) return;
-                
-                board[r][c].isRevealed = true;
-                remainingCells--;
-                
-                if (board[r][c].isHeart) {
-                    // 找到爱心
-                    heartsFound++;
-                    updateUI();
-                    
-                    if (heartsFound === heartCount) {
-                        // 胜利！
-                        gameOver = true;
-                        setTimeout(() => {
-                            alert('🎉 恭喜通关！找到所有爱心！');
-                            showPage('page4');
-                            showLetter();
-                            fireworks.createExplosion(window.innerWidth/2, window.innerHeight/2);
-                            setTimeout(() => fireworks.createExplosion(Math.random()*window.innerWidth, Math.random()*window.innerHeight), 200);
-                        }, 500);
-                    }
-                } else if (board[r][c].isMine) {
-                    // 踩到炸弹 - 简单模式：只显示这个炸弹，不重新开始
-                    board[r][c].isRevealed = true;
-                    remainingCells--;
-                    // 显示一下就盖回去，继续游戏
-                    setTimeout(() => {
-                        board[r][c].isRevealed = false;
-                        remainingCells++;
-                        draw();
-                    }, 300);
-                } else if (board[r][c].neighborMines === 0) {
-                    // 空白格子，自动翻开周围
-                    for (let dr = -1; dr <= 1; dr++) {
-                        for (let dc = -1; dc <= 1; dc++) {
-                            if (dr !== 0 || dc !== 0) {
-                                reveal(r + dr, c + dc);
-                            }
-                        }
-                    }
-                }
-                
-                updateUI();
-                draw();
-            }
-
-            function handleClick(e) {
-                e.preventDefault();
-                if (gameOver) return;
-                
-                let x, y;
-                if (e.touches && e.touches.length > 0) {
-                    x = e.touches[0].clientX;
-                    y = e.touches[0].clientY;
+            if (scene === 'scene1') {
+                if (password === correctAnswers.scene1) {
+                    gameState.answers.scene1 = password;
+                    alert('🎉 正确！门打开了！');
+                    nextScene();
                 } else {
-                    x = e.clientX;
-                    y = e.clientY;
+                    showError('密码不正确，请再想想！');
                 }
-                
-                const rect = canvas.getBoundingClientRect();
-                const clickX = (x - rect.left) * (canvas.width / rect.width);
-                const clickY = (y - rect.top) * (canvas.height / rect.height);
-                
-                const c = Math.floor(clickX / gridSize);
-                const r = Math.floor(clickY / gridSize);
-                
-                reveal(r, c);
             }
-
-            initBoard();
-            draw();
-            canvas.addEventListener('click', handleClick);
-            canvas.addEventListener('touchstart', handleClick);
+            
+            if (scene === 'scene2') {
+                if (password === correctAnswers.scene2) {
+                    gameState.answers.scene2 = password;
+                    alert('🎉 正确！数字规律破解成功！');
+                    nextScene();
+                } else {
+                    showError('答案不正确，再分析一下规律！');
+                }
+            }
+            
+            if (scene === 'scene4') {
+                const answer = password.split(',').map(n => n.trim());
+                const correct = correctAnswers.scene4;
+                if (answer.length === 3 && 
+                    answer[0].toLowerCase() === correct[0].toLowerCase() &&
+                    answer[1].toLowerCase() === correct[1].toLowerCase() &&
+                    answer[2].toLowerCase() === correct[2].toLowerCase()) {
+                    gameState.answers.scene4 = password;
+                    alert('🎉 正确！逻辑推理成功！');
+                    nextScene();
+                } else {
+                    showError('顺序不对，请重新推理！');
+                }
+            }
+            
+            if (scene === 'scene5') {
+                // 计算正确的最终密码
+                const part1 = correctAnswers.scene1;      // 1215
+                const part2 = correctAnswers.scene2;      // 30
+                const part3 = correctAnswers.scene3.length.toString(); // 9
+                const part4 = correctAnswers.scene4.length.toString(); // 3
+                const finalPassword = part1 + part2 + part3 + part4; // 12153093
+                
+                if (password === finalPassword) {
+                    alert('🎉 恭喜！成功打开情书！');
+                    showLetter();
+                } else {
+                    showError('最终密码不正确，请检查各关卡答案！');
+                }
+            }
         }
 
-        // 显示表白信
+        // 图形密码选择
+        let patternSelection = [];
+        
+        function selectPatternCell(index) {
+            const cell = document.querySelectorAll('.pattern-cell')[index];
+            if (cell.classList.contains('selected')) {
+                cell.classList.remove('selected');
+                patternSelection = patternSelection.filter(i => i !== index);
+            } else {
+                cell.classList.add('selected');
+                patternSelection.push(index);
+            }
+        }
+
+        function resetPattern() {
+            document.querySelectorAll('.pattern-cell').forEach(cell => cell.classList.remove('selected'));
+            patternSelection = [];
+        }
+
+        function checkPattern() {
+            // 检查是否按正确顺序点击
+            const correct = correctAnswers.scene3;
+            
+            // 检查长度是否相同
+            if (patternSelection.length !== correct.length) {
+                showError('请按顺序点击心形的所有点！');
+                return;
+            }
+            
+            // 检查顺序是否正确
+            let correctOrder = true;
+            for (let i = 0; i < correct.length; i++) {
+                if (patternSelection[i] !== correct[i]) {
+                    correctOrder = false;
+                    break;
+                }
+            }
+            
+            if (correctOrder) {
+                gameState.answers.scene3 = patternSelection.join(',');
+                alert('🎉 正确！心形密码破解成功！');
+                nextScene();
+            } else {
+                showError('点击顺序不对，请按心形笔画顺序点击！');
+                resetPattern();
+            }
+        }
+
+        // 下一个场景
+        function nextScene() {
+            gameState.currentScene++;
+            document.querySelectorAll('.scene').forEach(scene => scene.classList.remove('active'));
+            document.getElementById(`scene${gameState.currentScene}`).classList.add('active');
+            updateInventory();
+        }
+
+        // 显示错误
+        function showError(msg) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = msg;
+            const activeScene = document.querySelector('.scene.active');
+            activeScene.insertBefore(errorDiv, activeScene.firstChild);
+            setTimeout(() => errorDiv.remove(), 2000);
+        }
+
+        // 显示提示
+        function showHint(scene) {
+            const hints = {
+                scene1: '提示：当长短针互换位置，时间会如何变化？也许答案就藏在表盘上。',
+                scene2: '提示：观察这些数字与它们位置的关系，乘法或许是解开谜题的关键。',
+                scene3: '提示：想象用一笔画成的心形，从哪里开始，又会经过哪些点？',
+                scene4: '提示：排除法是推理的利器，先确定谁不可能在某个位置。',
+                scene5: '提示：将前四关的"成果"串联起来，答案自然浮现。'
+            };
+            
+            gameState.hintsUsed++;
+            alert(`💡 提示 ${gameState.hintsUsed}：\n${hints[scene]}`);
+        }
+
+        // 显示情书
         function showLetter() {
-            const letterContent = `亲爱的${userName}：
+            const letterContent = `亲爱的你：
 
 我好像从来不是谁的首选，也没有一个人坚定的选择我。那些看似表面美好，终究只是短暂停靠，从未有人愿意为我卸下防备，坚定地在我身边。
 
@@ -779,17 +920,31 @@
 
 最后，祝你早、午、晚都安。`;
 
-            document.getElementById('letterName').textContent = userName;
             document.getElementById('letterContent').textContent = letterContent;
+            document.querySelectorAll('.scene').forEach(scene => scene.classList.remove('active'));
+            document.getElementById('resultScene').classList.add('active');
+            
+            // 显示庆祝效果
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => showSuccessEffect(), i * 150);
+            }
+        }
+
+        // 重新开始
+        function restartGame() {
+            document.querySelectorAll('.scene').forEach(scene => scene.classList.remove('active'));
+            document.getElementById('titleScreen').classList.add('active');
+            resetPattern();
+            document.getElementById('password1').value = '';
+            document.getElementById('password2').value = '';
+            document.getElementById('password4').value = '';
+            document.getElementById('password5').value = '';
+            document.getElementById('puzzle1').style.display = 'none';
+            document.getElementById('passwordSection1').style.display = 'none';
         }
 
         // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            new StarField(document.getElementById('starsCanvas'));
-            window.addEventListener('resize', () => {
-                fireworks.resize();
-            });
-        });
+        initDecorations();
     </script>
 </body>
 </html>
